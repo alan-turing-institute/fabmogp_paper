@@ -8,10 +8,11 @@ The paper manuscript and the necessary LaTex files are also included.
 
 This paper uses several software libraries to carry out the described computations:
 
-* `fdfault`, which simulated dynamic earthquake rupture
+* `fdfault`, which simulates dynamic earthquake rupture
 * `seistools`, a library containing utilities for fault mechanics research
 * `mogp_emulator`, an Uncertainty Quantification toolkit
-* `fabsim3`, a workflow management tool for running ensembles of scientific simulations
+* `fabsim3`, a simulation management tool to support simulation reproducibility
+* `fabmogp`, a `fabsim3` plugin for managing the simulations in this paper
 
 All of these tools are freely available under open source software licenses.
 
