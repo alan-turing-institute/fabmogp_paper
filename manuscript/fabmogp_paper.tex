@@ -1,0 +1,227 @@
+%% Author_tex.tex
+%% V1.0
+%% 2012/13/12
+%% developed by Techset
+%%
+%% This file describes the coding for rstrans.cls
+
+\documentclass[openacc]{rstransa}%%%%where rstrans is the template name
+
+%%%% *** Do not adjust lengths that control margins, column widths, etc. ***
+
+%%%%%%%%%%% Defining Enunciations  %%%%%%%%%%%
+\newtheorem{theorem}{\bf Theorem}[section]
+\newtheorem{condition}{\bf Condition}[section]
+\newtheorem{corollary}{\bf Corollary}[section]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%%%% Article title to be placed here
+\title{Uncertainty Quantification of Dynamic Earthquake Rupture Simulations}
+
+\author{%%%% Author details
+Eric G. Daub$^{1}$, Hamid Arabnejad$^{2}$ and Derek Groen$^{2}$}
+
+%%%%%%%%% Insert author address here
+\address{$^{1}$Alan Turing Institute, London\\
+$^{2}$Brunel University London}
+
+%%%% Subject entries to be placed here %%%%
+\subject{Uncertainty Quantification, Surrogate Modeling, Earthquake Mechanics}
+
+%%%% Keyword entries to be placed here %%%%
+\keywords{xxxx, xxxx, xxxx}
+
+%%%% Insert corresponding author and its email address}
+\corres{Eric G. Daub\\
+\email{edaub@turing.ac.uk}}
+
+%%%% Abstract text to be placed here %%%%%%%%%%%%
+\begin{abstract}
+Scientists frequently use computer simulations to study complex phenomena that are poorly constrained by observational data such as climate, earthquakes, tsunamis, and other physical systems. These computer simulations usually involve solving complex partial differential equations, and due to the computational cost such simulations can rarely be run at the resolution needed to capture all of the relevant physics.
+Because of this, simulations have to capture missing physics in an often ad hoc way, as it is difficult to estimate parameters for these models directly. A common approach to interrogate the real world using these models is to run a limited ensemble of simulations, fit a Gaussian Process emulator to the simulations, and then use the emulator to query the ability of the model to match the available data for a wider variety of input parameters.
+We present a tutorial where we choose simulation points, fit an emulator, and then examine input space to see which inputs can be ruled out from the data. Our tutorial relies on the mogp\_emulator package (see: https://github.com/alan-turing-institute/mogp\_emulator) from the Turing Institute to perform a range of UQ and data processing activities, and components from the VECMA toolkit (e.g. FabSim3, see http://www.vecma-toolkit.eu) to streamline the whole process, enabling users to manage the workflow using one-liner commands, facilitate the efficient execution of ensembles on local and remote resources, and automatically curate the input and output environment to make the work easier to reproduce. The tools in this tutorial allow domain researchers that are not necessarily experts in the underlying methods to apply them easily to complex problems.
+We illustrate the use of the package by applying the methods to dynamic earthquake rupture, which solves for the size of an earthquake and the resulting ground shaking based on the stress tensor in the Earth. In the provided simulation code, we solve the elastic wave equation coupled to a frictional failure model on the fault. The simulation calculates the size of an earthquake (which can be measured from seismic data) given an initial stress tensor (a quantity that is poorly constrained from seismic data). The simulation computes the earthquake size based on the stress tensor combined with the fault geometry and frictional failure properties, both of which are taken to be known here for the sake of simplicity. We show through the tutorial results that the method is able to rule out large portions of the input parameter space, which could lead to new ways to constrain the stress tensor in the Earth based on earthquake observations.
+
+\end{abstract}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%% Insert the texts which can accomdate on firstpage in the tag "fmtext" %%%%%
+
+\begin{fmtext}
+\section{Introduction}
+
+
+
+
+\end{fmtext}
+
+%%%%%%%%%%%%%%% End of first page %%%%%%%%%%%%%%%%%%%%%
+
+\maketitle
+
+\section{Uncertainty Quantification Approach}
+
+In Uncertainty Quantification (UQ) workflows, we would like to learn about a complex simulator that describes the real world (imperfectly). These simulations are usually computationally intensive and the outputs are very sensitive to the inputs, making it hard to use them directly to compare with observations.
+
+\subsection{Experimental Design}
+
+While we can simply draw Monte Carlo samples for our simulation runs, we probably should be a bit more careful about this since we only get a limited number of runs. It is probably a good idea that some of our simulations sample low values of the inputs, some high values, and try and do a decent job of mixing up the different values. This can be done by using a Latin Hypercube, which ensures that samples are drawn from each quantile of the distribution of each parameter that is varied.
+
+\subsection{Gaussian Process Emulator}
+
+Gaussian Processes are a non-parametric model for regression that approximates the complex simulator function as a multivariate normal distribution. In simple terms, a GP interpolates between the known simulation points in a robust way and provides uncertainty estimates for any predictions that it makes. Because it has an uncertainty estimate, it is commonly used in UQ workflows. We use a zero mean GP with a Squared Exponential Kernel in this
+example, though more complicated mean functions and covariance kernels are common.
+
+In order to make predictions, we need to fit the model to the data. There are several methods of doing this, but the simplest is to use the maximum marginal likelihood, which is easy to compute for a GP:
+
+This finds a set of correlations lengths, the hyperparameters of the GP, that maximises the marginal log-likelihood and determines how the GP interpolates between unknown points. Once these parameters are estimated, we can make predictions efficiently for unknown parameter values and have estimates of the uncertainty.
+
+\subsection{History Matching}
+
+Once we have predictions for a large number of query points, it is straightforward to compare with observations. History Matching is one way to perform this comparison -- in History Matching, we compute an implausibility metric for each query point by determining the number of standard deviations between the observation and the predicted mean from the approximate model. We can then ``rule out'' points that are many standard deviations from the mean as being implausible given the observation and all sources of error.
+
+In real situations, there are three types of uncertainty that we need to account for when computing implausibility:
+
+\begin{enumerate}
+\item Observational error, which is uncertainty in the observed value itself;
+\item Uncertainty in the approximate model, which reflects the fact that we cannot query the full computational model at all points; and
+\item Model discrepancy, which is uncertainty about the model itself, and measures how well the computational model represents reality.
+\end{enumerate}
+
+In practice, 1. and 2. are straightforward to determine, while 3. is much trickier. However, many studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
+
+\section{Earthquake Model}
+
+As a concrete example of one of these problems, we will examine a simplified version of an earthquake simulation. In seismology, the most basic quantity that we can measure about an earthquake is its size, quantified by the seismic moment. The seismic moment is proportional to the relative displacement across the two sides of the fault (known as the slip) multiplied by the area of the fault plane that experienced this slip. Larger earthquakes occur when either more slip occurs or the area that slipped increases (in nature, these two quantities are correlated so earthquakes get bigger by both increasing the slip and the area simulataneously).
+
+To run the earthquake simulations, we are using the fdfault application. fdfault is a high performance, parallelized finite difference code for simulation of frictional failure and wave propagation in elastic-plastic media. It features high order finite difference methods and is able to handle complex geometries through coordinate transformations and implements a provably stable method.
+
+Physically, this slip occurs when the stress (or force) on the fault exceeds the fault strength. Fault strength is determined by a friction law that compares the shear force on a patch of the fault to the normal force acting on that patch of the fault. When this condition is met, the fault slips on this local patch, which changes the forces acting on the other fault patches (this process is described by the elastic wave equation). Thus, to make a physical model of an earthquake, we need to specify the initial forces on the fault, the strength of the fault, and the elastic medium surrounding the fault. In general, the initial forces on the fault cannot be determined in the earth, and we will use a UQ workflow to try and estimate these quantities. A snapshot from one of the simulations is shown in the figure below -- the bumpy line is the rough fault surface, and the color scale shows the propagation of elastic waves away from the fault due to the slip on the fault.
+
+Complicating matters is the fact that earthquake faults are not smooth planes, but instead rough bumpy surfaces with a fractal geometry. An important consequence of this is that the smallest wavelength bumps have the largest effect on the resulting forces. This is what makes earthquake problems challenging to model: at a given model resolution, you are omitting details that play an important role. This small scale roughness that is left out of the model must instead be accounted for when setting the strength of the fault. However, for this demonstration we will assume that both the rough geometry of the fault and the fault strength are known in advance, and it is just the initial stress (forces) that must be inferred. This tutorial will show how a UQ workflow can be used to estimate the fault stresses for a given earthquake size.
+
+\begin{figure}[!h]
+%\centering\includegraphics[width=2.5in]{xxxxxx.eps}
+\caption{Snapshot of an earthquake simulation. The bumpy line is the fault surface. The color scale represents the ground motions from the resulting earthquake as the elastic waves carry the stress changes from the slip propagate through the medium.}
+\label{fig_sim}
+\end{figure}
+
+The simulation requires us to specify the initial stress tensor acting on the earthquake fault in order to run a simulation. For this case, we run a 2D plane strain simulation to reduce the problem to a reasonable computational level such that it only takes a short amount of time to run. In a plane strain model, the stress tensor has three components: two compressive and one shear. One compressive component describes the normal force on the fault, and the other component describes the normal force in the orthogonal direction. The shear component sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
+
+While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations.
+
+\begin{enumerate}
+\item Pressure increases linearly with depth due to the weight of the rocks. This can be mediated by fluid pressure counterbalancing some of the overburden pressure, and earthquakes start at different depths, so we are not sure of the exact value. However, at typical depths where earthquakes start (5-10 km), this pressure is expected to be somewhere in the range of -80 MPa to -120 MPa (stress is assumed to be negative in compression). Therefore, we can use this range to choose values for one component, and then assume that the other component is similar (say $\pm 10\%$ of that value).
+\item Shear stresses are below the failure level on the fault. This can be understood as simply reflecting that earthquakes tend to start in one place and then grow from there, and do not start in many places at once. Thus, we will assume that since the frictional strength of the fault in our simulation is 0.7 times the normal stress, the initial shear stress is between 0.1 and 0.4 of the normal stress.
+\end{enumerate}
+
+Thus, we parametrize the simulations with three inputs: a normal stress that is uniformly distributed from -120 MPa to -80 MPa, a shear to normal ratio uniformly distributed from 0.1 to 0.4, and a ratio between the two normal stress components uniformly distribted from 0.9 to 1.1. These three parameters can be sampled via Monte Carlo sampling and then transformed to the three correlated stress components in order to run the simulation.
+
+%%% Numbered equation
+\begin{align}\label{1.1}
+\begin{split}
+\frac{\partial u(t,x)}{\partial t} &= Au(t,x) \left(1-\frac{u(t,x)}{K}\right)-B\frac{u(t-\tau,x) w(t,x)}{1+Eu(t-\tau,x)},\\
+\frac{\partial w(t,x)}{\partial t} &=\delta \frac{\partial^2w(t,x)}{\partial x^2}-Cw(t,x)+D\frac{u(t-\tau,x)w(t,x)}{1+Eu(t-\tau,x)},
+\end{split}
+\end{align}
+
+\begin{align}\label{1.2}
+\begin{split}
+\frac{dU}{dt} &=\alpha U(t)(\gamma -U(t))-\frac{U(t-\tau)W(t)}{1+U(t-\tau)},\\
+\frac{dW}{dt} &=-W(t)+\beta\frac{U(t-\tau)W(t)}{1+U(t-\tau)}.
+\end{split}
+\end{align}
+
+%%%% Unnumbered equation
+\begin{eqnarray}
+\frac{\partial(F_1,F_2)}{\partial(c,\omega)}_{(c_0,\omega_0)} = \left|
+\begin{array}{ll}
+\frac{\partial F_1}{\partial c} &\frac{\partial F_1}{\partial \omega} \\\noalign{\vskip3pt}
+\frac{\partial F_2}{\partial c}&\frac{\partial F_2}{\partial \omega}
+\end{array}\right|_{(c_0,\omega_0)}\notag\\
+=-4c_0q\omega_0 -4c_0\omega_0p^2 =-4c_0\omega_0(q+p^2)>0.
+\end{eqnarray}
+
+\section{Simulation Management}
+
+The mogp\_ensemble workflow will automatically sample the Latin Hypercube to create the desired number of points, set up all of the necessary simulations, and run them. The advantage of using this approach over the manual approach described above is that the runs are each performed in individual directories, with input, output and environment curated accordingly. This makes it very easy to reproduce individual runs, and also helps with the diagnostics in case some of the simulations exhibit unexpected behaviours.
+
+FabSim3 is an toolkit for user-developers to help automate computational workflows involving many simulations and remote resources. It has been used in a variety of disciplines, for instance to facilitate coupled atomistic / coarse-grained materials simulations and to perform large-scale sensitivity analysis of agent-based migration models. The tool is open-source (BSD 3-clause license) and one of the main components of the VECMA toolkit.
+
+\section{Results}
+
+\subsection{Simulator Runs}
+
+\begin{table}[!h]
+\caption{Latin Hypercube experimental design samples used for building the surrogate model}
+\label{table_lhc}
+\begin{tabular}{cccc}%%%The number of columns has to be defined here
+\hline
+Sample & Normal Stress & Shear/Normal Stress & Normal Stress Ratio \\
+\hline
+1 & -100 MPa & 0.25 & 1. \\
+\\\hline
+\end{tabular}
+\vspace*{-4pt}
+\end{table}%%%End of the table
+
+\subsection{Surrogate Model Validation}
+
+\subsection{History Matching}
+
+\begin{figure}[!h]
+%\centering\includegraphics[width=2.5in]{xxxxxx.eps}
+\caption{Points that have not been ruled out yet (NROY) projected into the normal and shear/normal plane of the parameter space. Note that the points are fairly tightly clustered along a line, showing that the earthquake size is very sensitive to the stress tensor components.}
+\label{fig_nroy}
+\end{figure}
+
+\begin{figure}[!h]
+%\centering\includegraphics[width=2.5in]{xxxxxx.eps}
+\caption{Implausibility metric (number of standard deviations between the observation and the predictions of the surrogate model) in the parameter space projected into the normal and shear/normal plane. As with the NROY plot, this shows the sensitivity of the output to the stress components.}
+\label{fig_implausibility}
+\end{figure}
+
+
+
+\section{Conclusion}
+The conclusion text goes here.\vskip6pt
+
+\enlargethispage{20pt}
+
+
+\ethics{Insert ethics statement here if applicable.}
+
+\dataccess{Insert details of how to access any supporting data here.}
+
+\aucontribute{For manuscripts with two or more authors, insert details of the authors’ contributions here. This should take the form: 'AB caried out the experiments. CD performed the data analysis. EF conceived of and designed the study, and drafted the manuscript All auhtors read and approved the manuscript'.}
+
+\competing{Insert any competing interests here. If you have no competing interests please state 'The author(s) declare that they have no competing interests’.}
+
+\funding{Insert funding text here.}
+
+\ack{Insert acknowledgment text here.}
+
+\disclaimer{Insert disclaimer text here if applicable.}
+
+%%%%%%%%%% Insert bibliography here %%%%%%%%%%%%%%
+
+\begin{thebibliography}{9}
+
+\bibitem{1} Allwood JM, Cullen JM. 2011 \textit{Sustainable materials:  with both eyes open}.
+Cambridge, UK: UIT Cambridge. See \href{http://www.withbotheyesopen.com}{http://www.withbotheyesopen.com}.
+
+\bibitem{2}  MacKay DJC. 2008  \textit{Sustainable energy:  without the hot air}.
+ Cambridge, UK: UIT Cambridge. See \href{http://www.withouthotair.com}{http://www.withouthotair.com}.
+
+\bibitem{3} Gallman PG. 2011  \textit{Green alternatives and national energy strategy: the facts
+ behind the headlines}.  Baltimore,\ MD: Johns Hopkins University Press.
+
+\bibitem{4} MacKay DJC. 2013.  Solar energy in the context of energy use, energy transportation, and
+ energy storage. \textit{Proc. R. Soc. A} \textbf{371}.
+
+\end{thebibliography}
+
+\end{document}
