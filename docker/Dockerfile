@@ -15,7 +15,7 @@ ARG seistools_dir=seistools
 ARG seistools_repo=https://github.com/egdaub/seistools.git
 ARG mogp_emulator_dir=mogp_emulator
 ARG mogp_emulator_repo=https://github.com/alan-turing-institute/mogp_emulator.git
-ARG output_dir=output
+ARG output_dir=results
 
 # install dependencies needs to for FabSim3
 RUN apt-get update && \
@@ -39,10 +39,8 @@ RUN cd /usr/local/bin && \
 # clone mogp_emulator github repository
 WORKDIR ${base_dir}
 RUN mkdir -p ${mogp_emulator_dir} && \
-    git clone --single-branch -b devel ${mogp_emulator_repo} ${mogp_emulator_dir} && \
+    git clone --single-branch -b master ${mogp_emulator_repo} ${mogp_emulator_dir} && \
     cd ${mogp_emulator_dir} && \
-    pip install -r requirements.txt && \
-    pip install -r requirements-optional.txt && \
     python setup.py install
 
 # clone seistools github repository
@@ -70,11 +68,11 @@ RUN mkdir -p ${FabSim3_dir} && \
 
 # generate machines_user.yml file
 RUN cp ${FabSim3_dir}/deploy/machines_user_example.yml ${FabSim3_dir}/deploy/machines_user.yml
-RUN sed -i "s/your-username/`whoami`/g;s#~/Codes/FabSim#${Tutorial_dir}/${FabSim3_dir}#g"  ${FabSim3_dir}/deploy/machines_user.yml
+RUN sed -i "s/your-username/`whoami`/g;s#~/Codes/FabSim#${base_dir}/${FabSim3_dir}#g"  ${FabSim3_dir}/deploy/machines_user.yml
 RUN echo '\n\
 localhost:\n\
   mpi_exec : "/usr/bin/mpiexec"\n\
-  fdfault_exec : "'${Tutorial_dir}'/'${fdfault_dir}'"\n\
+  fdfault_exec : "'${base_dir}'/'${fdfault_dir}'"\n\
 \n' >> ${FabSim3_dir}/deploy/machines_user.yml
 
 

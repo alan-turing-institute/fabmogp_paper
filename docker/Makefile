@@ -1,5 +1,5 @@
 IMAGE = fabmogp
-docker_out = /home/root/fabmogp/output/
+docker_out = /home/root/fabmogp/results/
 
 .PHONY: fabmogp_build
 fabmogp_build: Dockerfile
