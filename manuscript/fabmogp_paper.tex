@@ -40,10 +40,24 @@ $^{2}$Brunel University London}
 
 %%%% Abstract text to be placed here %%%%%%%%%%%%
 \begin{abstract}
-Scientists frequently use computer simulations to study complex phenomena that are poorly constrained by observational data such as climate, earthquakes, tsunamis, and other physical systems. These computer simulations usually involve solving complex partial differential equations, and due to the computational cost such simulations can rarely be run at the resolution needed to capture all of the relevant physics.
-Because of this, simulations have to capture missing physics in an often ad hoc way, as it is difficult to estimate parameters for these models directly. A common approach to interrogate the real world using these models is to run a limited ensemble of simulations, fit a Gaussian Process emulator to the simulations, and then use the emulator to query the ability of the model to match the available data for a wider variety of input parameters.
-We present a tutorial where we choose simulation points, fit an emulator, and then examine input space to see which inputs can be ruled out from the data. Our tutorial relies on the mogp\_emulator package (see: https://github.com/alan-turing-institute/mogp\_emulator) from the Turing Institute to perform a range of UQ and data processing activities, and components from the VECMA toolkit (e.g. FabSim3, see http://www.vecma-toolkit.eu) to streamline the whole process, enabling users to manage the workflow using one-liner commands, facilitate the efficient execution of ensembles on local and remote resources, and automatically curate the input and output environment to make the work easier to reproduce. The tools in this tutorial allow domain researchers that are not necessarily experts in the underlying methods to apply them easily to complex problems.
-We illustrate the use of the package by applying the methods to dynamic earthquake rupture, which solves for the size of an earthquake and the resulting ground shaking based on the stress tensor in the Earth. In the provided simulation code, we solve the elastic wave equation coupled to a frictional failure model on the fault. The simulation calculates the size of an earthquake (which can be measured from seismic data) given an initial stress tensor (a quantity that is poorly constrained from seismic data). The simulation computes the earthquake size based on the stress tensor combined with the fault geometry and frictional failure properties, both of which are taken to be known here for the sake of simplicity. We show through the tutorial results that the method is able to rule out large portions of the input parameter space, which could lead to new ways to constrain the stress tensor in the Earth based on earthquake observations.
+
+We present a tutorial demonstration using a surrogate-model based Uncertainty Quantification (UQ)
+approach to study dynamic earthquake rupture on a rough fault surface. The UQ approach performs
+model calibration where we choose simulation points, fit an an approximate surrogate
+model or emulator, and then examine input space to see which inputs can be ruled out from the data.
+Our approach relies on the \texttt{mogp\_emulator} package to perform model calibration,
+and the \texttt{FabSim3} component from
+the VECMA toolkit to streamline the workflow, enabling users to manage the workflow using the
+command line to curate reproducible simulations on local and remote resources.
+The tools in this tutorial provides an example template that allows domain researchers that are
+not necessarily experts in the underlying
+methods to apply them easily to complex problems.
+
+We illustrate the use of the package by applying the methods to dynamic earthquake rupture, which solves
+the elastic wave equation for the size of an earthquake and the resulting ground shaking based on the
+stress tensor in the Earth. We show through the tutorial results that the method is able to rule out
+large portions of the input parameter space, which could lead to new ways to constrain the stress tensor
+in the Earth based on earthquake observations.
 
 \end{abstract}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -53,7 +67,10 @@ We illustrate the use of the package by applying the methods to dynamic earthqua
 \begin{fmtext}
 \section{Introduction}
 
-
+Scientists frequently use computer simulations to study complex phenomena that are poorly constrained by
+observational data such as climate, earthquakes, tsunamis, and other physical systems. These computer
+simulations usually involve solving complex partial differential equations, and due to the computational
+cost such simulations can rarely be run at the resolution needed to capture all of the relevant physics.
 
 
 \end{fmtext}
@@ -62,28 +79,141 @@ We illustrate the use of the package by applying the methods to dynamic earthqua
 
 \maketitle
 
+Because of this, simulations have to capture missing physics in an often ad hoc way, and it is difficult to
+estimate parameters for these models directly. This poses a challenge for model calibration, as there
+is a high dimensional input space from which only a small subset of parameter choices can plausibly
+reproduce the observational data, while only a limited number of model evaluations are computationally
+feasible.
+
+A common approach to interrogate the real world using these models is to run a limited ensemble of
+simulations and fit a \emph{surrogate} model (also referred to in some contexts as an \emph{emulator})
+that is able to approximate the expensive simulation.
+This is frequently done using Gaussian Process (GP) regression to approximate the simulations,
+as GPs can be flexibly specified, are straightforward to fit using standard linear algebra procedures and
+provide robust error estimates of their predictions.
+The GP emulator is then used to query densely from the input space to carry out model calibration and
+choose plausible inputs for the simulation.
+
+However, while surrogate modelling approaches are common among statistics researchers, they are
+less frequently used by the domain experts that develop and run the physical models. Because of this,
+simulation studies often do not conduct rigorous UQ on their outputs, and parameter selection is
+often performed by hand-tuning or trial-and-error approaches. A major goal of the software libraries
+used in this paper is to facilitate domain experts performing UQ on simulation outputs without
+needing an in-depth understanding of the underlying statistical methods.
+
+
+
 \section{Uncertainty Quantification Approach}
 
-In Uncertainty Quantification (UQ) workflows, we would like to learn about a complex simulator that describes the real world (imperfectly). These simulations are usually computationally intensive and the outputs are very sensitive to the inputs, making it hard to use them directly to compare with observations.
+In Uncertainty Quantification (UQ) workflows, we would like to learn about a complex simulator that describes
+a physical system, in nearly every case imperfectly. These simulations are usually computationally intensive,
+high dimensional, and the outputs are very sensitive to the inputs, making it hard to use them directly
+to compare with observations.
+
+To overcome these challenges, we use a surrogate model approach based on a Gaussian Process emulator.
+We run a limited sample of points based on an Experimental Design over the input space, and fit the GP
+to the simulation outputs. The GP is then queried for a large number of input points from the Experimental
+Design and an approach known as History Matching is used to compare with the observations
+to calibrate the model. The result from this is a set of input points that are plausible given the
+observations and all uncertainties. In the following, we describe the steps in this workflow in more detail.
 
 \subsection{Experimental Design}
 
-While we can simply draw Monte Carlo samples for our simulation runs, we probably should be a bit more careful about this since we only get a limited number of runs. It is probably a good idea that some of our simulations sample low values of the inputs, some high values, and try and do a decent job of mixing up the different values. This can be done by using a Latin Hypercube, which ensures that samples are drawn from each quantile of the distribution of each parameter that is varied.
+\label{experimentaldesign}
+
+Based on the input parameters, we first need to specify a way to choose points at which to run the simulator.
+This is done via an Experimental Design, which is specified based on a probability distribution from which
+each individual input parameter is drawn independently. Based on these distributions, the simplest approach
+is to use Monte Carlo sampling to pick random input points to run. However, for expensive computational
+models the number of inputs is often limited, so in practice a more common approach is to choose
+the design in a way that attempts to maximise the accuracy of the underlying approximation. This can be
+further split into two approaches: one-shot designs, that choose all simulation points at once,
+or sequential designs that iteratively choose the next best point to simulate based on the existing
+information.
+
+In this study, we use a one-shot design based on a Latin Hypercube sampling approach. In a Latin
+Hypercube, we guarantee that we draw from all quantiles of each underlying parameter. In other words,
+for a design with 4 points, a Latin Hypercube will ensure that the 4 chosen points are each from
+a different quartile of each underlying parameter. The exact choice of values is done randomly
+within this constraint, so Latin Hypercube designs do have some variability associated with them.
+
+For small designs, Latin Hypercubes have been shown to perform better than Monte Carlo sampling under
+certain circumstances, though they are usually not as effective as sequential designs. However, because
+of their simplicity, we use them in this example as a straightforward way to draw samples for
+building a surrogate model of the underlying simulator.
 
 \subsection{Gaussian Process Emulator}
 
-Gaussian Processes are a non-parametric model for regression that approximates the complex simulator function as a multivariate normal distribution. In simple terms, a GP interpolates between the known simulation points in a robust way and provides uncertainty estimates for any predictions that it makes. Because it has an uncertainty estimate, it is commonly used in UQ workflows. We use a zero mean GP with a Squared Exponential Kernel in this
-example, though more complicated mean functions and covariance kernels are common.
+To fit our surrogate mode, we use a Gaussian Process emulator to approximate the simulation.
+Gaussian Processes are a non-parametric model for regression that approximates the complex simulator
+function as a multivariate normal distribution. Because the simulator is deterministic,
+a GP interpolates between the known simulation points in a robust way and provides uncertainty
+estimates for any predictions that it makes. Because it has an uncertainty estimate, it is commonly
+used in UQ workflows.
 
-In order to make predictions, we need to fit the model to the data. There are several methods of doing this, but the simplest is to use the maximum marginal likelihood, which is easy to compute for a GP:
+A Gaussian Process is specified by a mean function and a covariance function.
+We use a zero mean GP with a Squared Exponential Kernel in this
+example, though more complicated mean functions and covariance kernels are common, particularly
+if we have some underlying knowledge of the shape of the simulator output.
+The squared exponential kernel is defined as
+\begin{align}\label{sqexp}
+\begin{split}
+K(x, x') = \sigma^2 \exp\left(-\sum_i \frac{(x_i - x'_i)^2}{2 \theta_i^2}\right)
+\end{split}
+\end{align}
+where $x_i$ is the $i$th input parameter, $\sigma$ is an overall covariance scale, and $\theta_i$
+is a correlation length associated with the $i$th input. These hyperparameters $\theta_i, \sigma$
+are estimated based on the data.
 
-This finds a set of correlations lengths, the hyperparameters of the GP, that maximises the marginal log-likelihood and determines how the GP interpolates between unknown points. Once these parameters are estimated, we can make predictions efficiently for unknown parameter values and have estimates of the uncertainty.
+To predict the function and its uncertainty at unknown points, the covariance matrix must be inverted.
+The posterior mean and variance (i.e. once hyperparameter values are chosen) are computed via
+\begin{align}\label{predict}
+\begin{split}
+m(x^*) &= K(x^*, x) K(x, x)^{-1} y \\
+V[x^*] &= K(x^*, x^*) - K(x^*, x) K(x, x)^{-1} K(x, x^*)
+\end{split}
+\end{align}
+Because the kernel is positive definite, this inversion is done by Cholesky decomposition, requiring
+$\mathcal O(n^3)$ operations, where $n$ is the number of known values (i.e. the number of simulator
+runs). Once the covariance matrix is inverted and cached, mean predictions require $\mathcal O(n)$
+operations while variance predictions require $\mathcal O(n^2)$ operations.
+
+In order to make predictions, we need to fit the hyperparameter values for $\theta_i$ and $\sigma$.
+A common approach is to use the maximum marginal likelihood, which is easy to compute for a GP once
+the covariance matrix has been factorised:
+\begin{align}\label{sqexp}
+\begin{split}
+\log p(y|x) = -\frac{1}{2} y^T K(x, x)^{-1} y - \sum_i \log L_{ii} - \frac{n}{2}\log 2\pi
+\end{split}
+\end{align}
+where $L$ is the factorised covariance matrix using Cholesky decomposition and $n$ is the number
+of known values.
+This finds a set of correlations lengths and the overall covariance scale.
+
+While the simulator is deterministic and we thus should theoretically be able to use Eq.~(\ref{sqexp})
+directly, in practice numerical round-off errors can cause the Cholesky factorisation to be
+unstable. To mitigate this, a ``nugget'' term is added to the diagonal that adds a small amount
+of noise to stabilise the matrix inversion. There are several ways to estimate the nugget: it can
+be fixed (known noise level), it can be fit as an additional hyperparameter, or it can be found
+adaptively by factorising the matrix with increasing noise levels until the algorithm succeeds.
+In this example, we use the adaptive approach as it tends to be the most robust way to fit an
+emulator with a small nugget.
 
 \subsection{History Matching}
 
-Once we have predictions for a large number of query points, it is straightforward to compare with observations. History Matching is one way to perform this comparison -- in History Matching, we compute an implausibility metric for each query point by determining the number of standard deviations between the observation and the predicted mean from the approximate model. We can then ``rule out'' points that are many standard deviations from the mean as being implausible given the observation and all sources of error.
+Once we have predictions for a large number of query points, it is straightforward to compare with observations.
+History Matching is one way to perform this comparison -- in History Matching, we compute an implausibility
+metric $I$ for each query point by determining the number of standard deviations between the observation and the
+predicted mean from the approximate model:
+\begin{align}\label{implaus}
+\begin{split}
+I(\bar{x^*}) = \frac{|z - m(x^*))|}{\sqrt{\sigma_z^2+V(x^*)+\sigma_d^2}}
+\end{split}
+\end{align}
+where $z$ is the observed quantity and $\sigma_z$ is its observational error (as a standard deviation) and
+$\sigma_d$ is the model discrepancy, described below. We can then ``rule out'' points that are many standard deviations from the mean as being implausible given the observation and all sources of error.
 
-In real situations, there are three types of uncertainty that we need to account for when computing implausibility:
+As noted above, there are three types of uncertainty that we need to account for when computing implausibility:
 
 \begin{enumerate}
 \item Observational error, which is uncertainty in the observed value itself;
@@ -93,15 +223,52 @@ In real situations, there are three types of uncertainty that we need to account
 
 In practice, 1. and 2. are straightforward to determine, while 3. is much trickier. However, many studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
 
+\subsection{Implementation with mogp\_emulator}
+
+The above components are implemented in the \texttt{mogp\_emulator} software library, which is
+written in Python and builds on the Numpy and Scipy libraries to handle the array operations and
+linear algebra, and probability distributions and optimisation libraries, respectively. The
+library is released under a permissive MIT license and is under continued development. The
+package includes a number of features not used in this example, including flexible mean function
+specification, prior distributions for MAP estimation for the Gaussian Process emulators.
+
 \section{Earthquake Model}
 
-As a concrete example of one of these problems, we will examine a simplified version of an earthquake simulation. In seismology, the most basic quantity that we can measure about an earthquake is its size, quantified by the seismic moment. The seismic moment is proportional to the relative displacement across the two sides of the fault (known as the slip) multiplied by the area of the fault plane that experienced this slip. Larger earthquakes occur when either more slip occurs or the area that slipped increases (in nature, these two quantities are correlated so earthquakes get bigger by both increasing the slip and the area simulataneously).
+As a concrete example of a complex physical simulator, we examine an earthquake rupture simulation.
+In seismology, the most basic quantity that we can measure about an earthquake is its size,
+quantified by the seismic moment. The seismic moment is proportional to the relative displacement across the
+two sides of the fault (known as the slip) multiplied by the area of the fault plane that experienced this slip
+and a modulus of rigidity. Larger earthquakes occur when either more slip occurs or the area that slipped
+increases (in nature, these two quantities are correlated so earthquakes get bigger by both increasing the slip
+and the area simulataneously).
 
-To run the earthquake simulations, we are using the fdfault application. fdfault is a high performance, parallelized finite difference code for simulation of frictional failure and wave propagation in elastic-plastic media. It features high order finite difference methods and is able to handle complex geometries through coordinate transformations and implements a provably stable method.
+\subsection{Dynamic Earthquake Rupture}
 
-Physically, this slip occurs when the stress (or force) on the fault exceeds the fault strength. Fault strength is determined by a friction law that compares the shear force on a patch of the fault to the normal force acting on that patch of the fault. When this condition is met, the fault slips on this local patch, which changes the forces acting on the other fault patches (this process is described by the elastic wave equation). Thus, to make a physical model of an earthquake, we need to specify the initial forces on the fault, the strength of the fault, and the elastic medium surrounding the fault. In general, the initial forces on the fault cannot be determined in the earth, and we will use a UQ workflow to try and estimate these quantities. A snapshot from one of the simulations is shown in the figure below -- the bumpy line is the rough fault surface, and the color scale shows the propagation of elastic waves away from the fault due to the slip on the fault.
+Earthquake slip can be computed by solving the elastic wave equation coupled to a frictional failure model
+on the fault. The simulation calculates the size of an earthquake (which can be measured from seismic data)
+given an initial stress tensor in the material (a quantity that is poorly constrained from seismic data).
+The simulation computes the earthquake size based on the stress tensor combined with the fault geometry and
+frictional failure properties, both of which are taken to be known here for the sake of simplicity.
 
-Complicating matters is the fact that earthquake faults are not smooth planes, but instead rough bumpy surfaces with a fractal geometry. An important consequence of this is that the smallest wavelength bumps have the largest effect on the resulting forces. This is what makes earthquake problems challenging to model: at a given model resolution, you are omitting details that play an important role. This small scale roughness that is left out of the model must instead be accounted for when setting the strength of the fault. However, for this demonstration we will assume that both the rough geometry of the fault and the fault strength are known in advance, and it is just the initial stress (forces) that must be inferred. This tutorial will show how a UQ workflow can be used to estimate the fault stresses for a given earthquake size.
+Physically, slip occurs when the shear stress on the fault exceeds the fault strength. Fault strength is
+determined by a friction law that compares the shear force on a patch of the fault to the normal force acting
+on that patch of the fault. When this condition is met, the fault slips on this local patch, which changes
+the forces acting on the other fault patches (this process is described by the elastic wave equation).
+Thus, to make a physical model of an earthquake, we need to specify the initial forces on the fault, the
+strength of the fault, and the elastic medium surrounding the fault. In general, the initial forces on the
+fault cannot be determined in the earth, and we will use a UQ workflow to try and estimate these quantities.
+A snapshot of the ground shaking from one of the simulations is shown in Fig.~\ref{fig_sim} --
+the bumpy line is the rough fault surface, and the color scale shows the propagation of elastic waves away
+from the fault due to the slip on the fault.
+
+Complicating matters is the fact that earthquake faults are not smooth planes, but instead rough bumpy surfaces
+with a fractal geometry. An important consequence of this is that the smallest wavelength bumps have the
+largest effect on the resulting forces. This is what makes earthquake problems challenging to model: at a given
+model resolution, you are omitting details that play an important role. This small scale roughness that is left
+out of the model must instead be accounted for when setting the strength of the fault. However, for this
+demonstration we will assume that both the rough geometry of the fault and the fault strength are known in
+advance, and it is just the initial stress (forces) that must be inferred. We show how a UQ
+workflow can be used to estimate the fault stresses for a given earthquake size.
 
 \begin{figure}[!h]
 %\centering\includegraphics[width=2.5in]{xxxxxx.eps}
@@ -109,8 +276,66 @@ Complicating matters is the fact that earthquake faults are not smooth planes, b
 \label{fig_sim}
 \end{figure}
 
-The simulation requires us to specify the initial stress tensor acting on the earthquake fault in order to run a simulation. For this case, we run a 2D plane strain simulation to reduce the problem to a reasonable computational level such that it only takes a short amount of time to run. In a plane strain model, the stress tensor has three components: two compressive and one shear. One compressive component describes the normal force on the fault, and the other component describes the normal force in the orthogonal direction. The shear component sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
+\subsection{Simulation Details}
 
+The simulation requires us to specify the initial stress tensor acting on the earthquake fault in order to run a
+simulation. For this case, we run a 2D plane strain simulation of a fault that is 32 km in length
+to reduce the problem to a reasonable
+computational level such that it only takes a short amount of time to run. In a plane strain model, the
+elastic wave equation can be written in velocity/stress form as
+\begin{align}\label{elasticwave}
+\begin{split}
+\rho\frac{\partial v_x}{\partial t} &= \frac{\partial \sigma_{xx}}{\partial_x} + \frac{\partial \sigma_{xy}}{\partial_y}\\
+\rho\frac{\partial v_y}{\partial t} &= \frac{\partial \sigma_{xy}}{\partial_x} + \frac{\partial \sigma_{yy}}{\partial_y}\\
+\frac{\partial \sigma_{xx}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial_x} + \frac{\partial v_y}{\partial_y}\right) + G \frac{\partial v_x}{\partial x}\\
+\frac{\partial \sigma_{yy}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial_x} + \frac{\partial v_y}{\partial_y}\right) + G \frac{\partial v_y}{\partial y}\\
+\frac{\partial \sigma_{xy}}{\partial t} &= G \left(\frac{\partial v_x}{\partial y} + \frac{\partial v_y}{\partial x} \right)
+\end{split}
+\end{align}
+where $v_x$ and $v_y$ are the particle velocity components, $\sigma_{xx}, \sigma_{yy}$, and $\sigma_{xy}$
+are the threestress tensor has three components (two compressive and one shear), $\rho$ is material
+density, $\lambda$ is the first Lam\'{e} parameter, and $G$ is the shear modulus.
+
+Frictional failure follows the slip weakening friction law, where the friction coefficient $\mu$ depends
+on the fault slip $U$ as
+\begin{align}\label{slipweak}
+\begin{split}
+\mu(U) = (1 - U/D_c)(\mu_s-\mu_d) + \mu_d.
+\end{split}
+\end{align}
+Here, $\mu_s$ is a static friction coefficient, $\mu_d$ is the dynamic friction coefficient, and $D_c$
+is the slip scale over which friction transitions from static to dynamic. The simulation is initiated
+at a fixed point at the centre of the fault by increasing the shear stress to the failure level over
+a patch of width 4 km. Strong barriers arrest rupture 2 km from the ends of the simulation, which
+caps the maximum size of the earthquake. All other simulation parameters
+are specified in Table~\ref{table_eq}.
+
+\begin{table}[!h]
+\caption{Base earthquake model parameter values}
+\label{table_eq}
+\begin{tabular}{cc}%%%The number of columns has to be defined here
+\hline
+Parameter & Value \\
+\hline
+$\rho$ & $2.68 \times 10^3$ kg/m$^3$ \\
+$\lambda$ & 32.04 GPa \\
+$G$ & 32.04 GPa \\
+$\mu_s$ & 0.7 \\
+$\mu_d$ & 0.2 \\
+$D_c$ & 0.8 m \\
+\hline
+\end{tabular}
+\vspace*{-4pt}
+\end{table}%%%End of the table
+
+The fault profile is generated following a fractal geometry by creating a self-similar power spectrum in
+Fourier space with random phase and taking the real part of the FFT and removing the linear trend.
+The RMS height is fixed to be smaller than the fault length by a factor of $10^{-2}$, which is typical
+for natural faults. Roughness is cut off at wavelengths less than 20 grid points. The rough fault generation
+routine, as well as other utilities for dealing with creating the rough fault simulations,
+are implemented in the \texttt{seistools} Python repository.
+
+$\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
 While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations.
 
 \begin{enumerate}
@@ -118,57 +343,93 @@ While we do not know the exact values of the stresses on earthquake faults, we d
 \item Shear stresses are below the failure level on the fault. This can be understood as simply reflecting that earthquakes tend to start in one place and then grow from there, and do not start in many places at once. Thus, we will assume that since the frictional strength of the fault in our simulation is 0.7 times the normal stress, the initial shear stress is between 0.1 and 0.4 of the normal stress.
 \end{enumerate}
 
-Thus, we parametrize the simulations with three inputs: a normal stress that is uniformly distributed from -120 MPa to -80 MPa, a shear to normal ratio uniformly distributed from 0.1 to 0.4, and a ratio between the two normal stress components uniformly distribted from 0.9 to 1.1. These three parameters can be sampled via Monte Carlo sampling and then transformed to the three correlated stress components in order to run the simulation.
+Thus, we parametrize the simulations with three inputs: a normal stress that is uniformly distributed from -120 MPa to -80 MPa, a shear to normal ratio uniformly distributed from 0.1 to 0.4, and a ratio between the two normal stress components uniformly distribted from 0.9 to 1.1. These three parameters can be sampled via
+the Experimental Design approach described in Section~\ref{experimentaldesign}.
 
-%%% Numbered equation
-\begin{align}\label{1.1}
-\begin{split}
-\frac{\partial u(t,x)}{\partial t} &= Au(t,x) \left(1-\frac{u(t,x)}{K}\right)-B\frac{u(t-\tau,x) w(t,x)}{1+Eu(t-\tau,x)},\\
-\frac{\partial w(t,x)}{\partial t} &=\delta \frac{\partial^2w(t,x)}{\partial x^2}-Cw(t,x)+D\frac{u(t-\tau,x)w(t,x)}{1+Eu(t-\tau,x)},
-\end{split}
-\end{align}
+To run the earthquake simulations, we use the \texttt{fdfault} application. \texttt{fdfault} is a
+high performance, parallelised
+finite difference code for simulation of frictional failure and wave propagation in elastic-plastic media. It
+features high order finite difference methods and is able to handle complex geometries through coordinate
+transformations and implements a provably stable method.
 
-\begin{align}\label{1.2}
-\begin{split}
-\frac{dU}{dt} &=\alpha U(t)(\gamma -U(t))-\frac{U(t-\tau)W(t)}{1+U(t-\tau)},\\
-\frac{dW}{dt} &=-W(t)+\beta\frac{U(t-\tau)W(t)}{1+U(t-\tau)}.
-\end{split}
-\end{align}
-
-%%%% Unnumbered equation
-\begin{eqnarray}
-\frac{\partial(F_1,F_2)}{\partial(c,\omega)}_{(c_0,\omega_0)} = \left|
-\begin{array}{ll}
-\frac{\partial F_1}{\partial c} &\frac{\partial F_1}{\partial \omega} \\\noalign{\vskip3pt}
-\frac{\partial F_2}{\partial c}&\frac{\partial F_2}{\partial \omega}
-\end{array}\right|_{(c_0,\omega_0)}\notag\\
-=-4c_0q\omega_0 -4c_0\omega_0p^2 =-4c_0\omega_0(q+p^2)>0.
-\end{eqnarray}
+Our simulations use a 401 by 302 point computational grid, with co-located points along the rough fault
+interface representing the displacement discontinuity across the fault surface.
+The time step is chosen based on a Courant–Friedrichs–Lewy ratio of 0.3 based on the minimum grid spacing and
+the shear wave speed in the material. Our simulations
+use 800 time steps to ensure that all ruptures have sufficient time to rupture until they arrest, either
+due to encountering an unfavorable fault orientation or reaching the edge of the fault. On a 4 core
+Mac Book, these simulations take about 20 seconds each using 4 processors.
+These parameters were chosen within the constraints
+of the tutorial time slot to make the problem practical.
 
 \section{Simulation Management}
 
-The mogp\_ensemble workflow will automatically sample the Latin Hypercube to create the desired number of points, set up all of the necessary simulations, and run them. The advantage of using this approach over the manual approach described above is that the runs are each performed in individual directories, with input, output and environment curated accordingly. This makes it very easy to reproduce individual runs, and also helps with the diagnostics in case some of the simulations exhibit unexpected behaviours.
+The UQ workflow and earthquake simulations described above can be run via \texttt{mogp\_emulator} and
+manually running the parallel earthquake simulations. However, in practice this is challenging
+and makes simulations difficult to reproduce. Thus, in our implementation, we have written a plugin
+for FabSim3 \texttt{fabmogp} to automate the various steps in the workflow.
 
 FabSim3 is an toolkit for user-developers to help automate computational workflows involving many simulations and remote resources. It has been used in a variety of disciplines, for instance to facilitate coupled atomistic / coarse-grained materials simulations and to perform large-scale sensitivity analysis of agent-based migration models. The tool is open-source (BSD 3-clause license) and one of the main components of the VECMA toolkit.
+
+We conduct our simulations using two FabSim3 simulation tasks: \texttt{mogp\_ensemble}, and
+\texttt{mogp\_analysis}.
+The \texttt{mogp\_ensemble} workflow will automatically sample the Latin Hypercube to create the desired number of points, set up all of the necessary earthquake simulations, and run them. The advantage of using this approach over the manual approach described above is that the runs are each performed in individual directories, with input, output and environment curated accordingly. This makes it very easy to reproduce individual runs, and also helps with the diagnostics in case some of the simulations exhibit unexpected behaviours.
+
+Additionally, our choice of earthquake simulation has made a number of compromises in order to
+ensure that the simulations run in a reasonable amount of time given the constraints of the
+workshop format where it was initially presented. However, to make the simulations more realistic
+will require additional computational resources. By implementing this workflow using FabSim3,
+we are able to test and debug the simulations locally, yet we can easily scale the simulations
+up to larger problems in 2D and 3D on a cluster without needing to change any of our execution scripts.
+This illustrates the utility of using a simulation management tool like FabSim3.
+
+Once the ensemble has run, FabSim3 can automatically fetch the simulation results for analysis. The
+analysis to fit the GP emulator and perform History Matching is implemented in a FabSim3 task to
+collect the simulation results and perform the UQ workflow. More details are available in the
+\texttt{fabmogp} code base.
 
 \section{Results}
 
 \subsection{Simulator Runs}
 
+A sample output from the Latin Hypercube Design with 20 sample points is shown in Table~\ref{table_lhc}.
+The input parameters take on a range of values spread out through the entire space, which are converted
+into the raw stress values for execution in the \texttt{fdfault} simulation.
+
 \begin{table}[!h]
-\caption{Latin Hypercube experimental design samples used for building the surrogate model}
+\caption{Latin Hypercube experimental design samples used for building the surrogate model and the
+corresponding integrated slip}
 \label{table_lhc}
-\begin{tabular}{cccc}%%%The number of columns has to be defined here
+\begin{tabular}{ccccc}%%%The number of columns has to be defined here
 \hline
-Sample & Normal Stress & Shear/Normal Stress & Normal Stress Ratio \\
+Sample & Normal Stress & Shear/Normal Stress & Normal Stress Ratio & Simulator Output \\
 \hline
-1 & -100 MPa & 0.25 & 1. \\
+\input{lhc_values}
 \\\hline
 \end{tabular}
 \vspace*{-4pt}
 \end{table}%%%End of the table
 
-\subsection{Surrogate Model Validation}
+The simulator output is calculated by integrating the final slip at the end of the simulation over the
+entire fault plane using Simpson's rule. Because all simulations have the same shear modulus and our
+simulations are 2D, we simply use this integrated slip as the simulator output as it is proportional
+to the seismic moment. Values range from 40 m km to around 200 m km.
+
+\subsection{Surrogate Model}
+
+From these simulator runs, we fit a Gaussian Process emulator to the outputs using the default
+\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B to minimise the
+negative marginal log-likelihood, and use gradient information as the log-likelihood gradient
+can be computed in closed form and requires little computational overhead beyond performing the
+Cholesky decomposition that is cached from the log-likelihood computation.
+
+Because the hyperparameters are constrained to be positive, we fit the logarithm of the correlation
+lengths and overall covariance to convert the problem into an unconstrained optimisation, which tends
+to be more stable. The resulting correlation lengths on a linear scale are \input{correlation_lengths}\unskip,
+for the normal stress, shear to normal, and normal stress ratios, respectively.
+The overall covariance is \input{covariance_scale}\unskip, which has also been converted to a linear scale.
+The covariance scale matches the range of simulations
+output noted in Table~\ref{table_lhc}, and the correlation lengths are reasonable given the input parameters.
 
 \subsection{History Matching}
 
@@ -187,24 +448,59 @@ Sample & Normal Stress & Shear/Normal Stress & Normal Stress Ratio \\
 
 
 \section{Conclusion}
-The conclusion text goes here.\vskip6pt
+
+This paper and the associated tutorial demonstrate the use of a variety of computational tools
+to implement and execute a UQ calibration workflow on a computationally intensive earthquake
+model. Our implementation can automate the entire workflow with a few simple command line
+instructions, and the FabSim3 plugin facilitates scaling our simulations to more intense
+problems requiring execution on a computer cluster. Our implementation also makes the UQ
+and earthquake simulation methods accessible to new users and facilitate reproducibility
+by providing the computational environment required to run them.
+
+The UQ results demonstrate that given the seismic moment of an event, we can rule out
+much of the input stress parameter space, as the earthquake size is highly sensitive to
+the stress. This can potentially overcome one of the main challenges of using dynamic
+earthquake modeling for seismic hazard analysis, as the earthquake size is taken to be an
+input for hazard analysis, while it is an output of dynamic rupture models and thus it is
+difficult in practice to specify a given earthquake size. Our UQ approach would enable use
+of dynamic simulations by providing a set of NROY points that are likely to produce an earthquake
+of the desired size, ensuring that seismic hazard estimates are physics-based, while still
+capturing the underlying uncertainty associated with our simulations. This will enable
+physics-based seismic hazard analysis that exploits simulations in a way not previously
+possible.
+
+\vskip6pt
 
 \enlargethispage{20pt}
 
+\dataccess{
+All simulation codes used in this work are publically available on Github under free and open
+source software licenses:
+\begin{itemize}
+   \item \texttt{mogp\_emulator} https://github.com/alan-turing-institute/mogp\_emulator
+   \item \texttt{FabSim3} https://github.com/djgroen/fabsim3
+   \item \texttt{fdfault} https://github.com/egdaub/fdfault
+   \item \texttt{seistools} https://github.com/egdaub/seistools
+   \item \texttt{fabmogp} https://github.com/edaub/fabmogp
+\end{itemize}
+The computational
+environment and associated scripts and build instructions used to produce the simulations,
+figures, and the typeset manuscript is available as a
+Docker image in a Github repository with instructions on building and running the simulations is
+available at https://github.com/alan-turing-institute/fabmogp\_paper.
+The associated tutorial to describe this workflow, the \texttt{mogp\_emulator} code, and
+the FabSim3 commands can be found at the \texttt{fabmogp} site https://github.com/edaub/fabmogp/blob/master/Tutorial.rst
+}
 
-\ethics{Insert ethics statement here if applicable.}
+\aucontribute{EGD designed and implemented the UQ workflow and earthquake simulations. HA and DG
+implemented the FabSim3 plugin to carry out this workflow. All authors contributed to writing the
+associated tutorial and this manuscript.}
 
-\dataccess{Insert details of how to access any supporting data here.}
-
-\aucontribute{For manuscripts with two or more authors, insert details of the authors’ contributions here. This should take the form: 'AB caried out the experiments. CD performed the data analysis. EF conceived of and designed the study, and drafted the manuscript All auhtors read and approved the manuscript'.}
-
-\competing{Insert any competing interests here. If you have no competing interests please state 'The author(s) declare that they have no competing interests’.}
+\competing{The author(s) declare that they have no competing interests.}
 
 \funding{Insert funding text here.}
 
 \ack{Insert acknowledgment text here.}
-
-\disclaimer{Insert disclaimer text here if applicable.}
 
 %%%%%%%%%% Insert bibliography here %%%%%%%%%%%%%%
 
