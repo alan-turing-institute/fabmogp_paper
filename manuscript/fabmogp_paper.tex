@@ -22,7 +22,7 @@
 \title{Uncertainty Quantification of Dynamic Earthquake Rupture Simulations}
 
 \author{%%%% Author details
-Eric G. Daub$^{1}$, Hamid Arabnejad$^{2}$ and Derek Groen$^{2}$}
+Eric G. Daub$^{1}$, Hamid Arabnejad$^{2}$, Imran Mahmood$^{2}$ and Derek Groen$^{2}$}
 
 %%%%%%%%% Insert author address here
 \address{$^{1}$Alan Turing Institute, London\\
@@ -433,18 +433,47 @@ output noted in Table~\ref{table_lhc}, and the correlation lengths are reasonabl
 
 \subsection{History Matching}
 
+With the fit GP emulator, we can now make predictions using a dense sampling of points drawn from the
+experimental design and compare with an observed value using History Matching. We use 10,000 samples
+in the analysis that follows. For the sake of this demostration, we simply pick an arbitrary value
+from within the range of simulation outputs to serve as our ``observed'' value to illustrate how the
+procedure works, though in practice the observed seismic moment will be the size of a particular
+earthquake on the fault that is being studied. We assume that there is no error in the true value
+and the only uncertainty is the emulator prediction uncertainty to simplify the demonstration, though
+in practice the additional uncertainty from the observational error and model discrepancy will simply
+slighly expand the size of the space that has not been ruled out.
+
+An example of the samples that have been not ruled out yet (NROY) for the observed value of 58 m km
+is shown in Fig.~\ref{fig_nroy} projected into the normal and shear/normal ratio plane of parameter
+space. We use a plausibility threshold of 3 standard deviations from the mean to rule out points.
+We note that the NROY space is fairly clustered around along a specific curve in this space.
+At high compressive normal stresses, this seismic moment is produced for shear/normal stress ratios
+of 0.18-0.19, while at lower normal stresses the shear/normal stress must be slightly higher to
+produce the known value. At very low shear to normal stresses there is a region that cannot be
+ruled out, though the fact that this occurs near the boundary of the space suggests this may be
+an artifact of our original sampling. Designs with more sample points do not exhibit this feature.
+We note that the projection shown in Fig.~\ref{fig_nroy} was found to capture most of the structure
+in the space, and suggests that the additional normal
+stress component is less important for predicting the final seismic moment in our simulations.
+
 \begin{figure}[!h]
 %\centering\includegraphics[width=2.5in]{xxxxxx.eps}
 \caption{Points that have not been ruled out yet (NROY) projected into the normal and shear/normal plane of the parameter space. Note that the points are fairly tightly clustered along a line, showing that the earthquake size is very sensitive to the stress tensor components.}
 \label{fig_nroy}
 \end{figure}
 
+The implausibility metric used to determine the NROY space (Eq.~(\ref{implaus})) is shown in
+Fig.~\ref{fig_implausibility}. As we can see, most values that are ruled out have implausibility
+metrics much greater than 6, indicating that we have a high degree of confidence that they can be
+ruled out. This knowledge allows us to focus further simulation effort and anlysis on a much narrower
+part of parameter space, so that future computational effort is focussed on the most likely parameter
+values to improve our understanding of the problem and make predictions.
+
 \begin{figure}[!h]
 %\centering\includegraphics[width=2.5in]{xxxxxx.eps}
-\caption{Implausibility metric (number of standard deviations between the observation and the predictions of the surrogate model) in the parameter space projected into the normal and shear/normal plane. As with the NROY plot, this shows the sensitivity of the output to the stress components.}
+\caption{Implausibility metric (number of standard deviations between the observation and the predictions of the surrogate model, Eq.~(\ref{implaus})) in the parameter space projected into the normal and shear/normal plane. As with the NROY plot, this shows the sensitivity of the output to the stress components.}
 \label{fig_implausibility}
 \end{figure}
-
 
 
 \section{Conclusion}
@@ -457,17 +486,37 @@ problems requiring execution on a computer cluster. Our implementation also make
 and earthquake simulation methods accessible to new users and facilitate reproducibility
 by providing the computational environment required to run them.
 
+Our results also illustrate how the \texttt{mogp\_emulator} package can facilitate
+robust model calibration approaches on problems that have not previously considered such
+an approach. The library allows flexible specification of all components of the calibration
+workflow and is easily adaptable to other physical systems.
+
+Other UQ approaches can be used to examine the outputs of the simulations shown here.
+For instance, the VECMA toolkit also has a UQ library \texttt{EasyVVUQ}, which can
+draw samples and collate experimental runs in addition to carrying out a number of
+UQ approaches, which are complementary to the focus in this study on model calibration.
+For instance, another approach to UQ would be to conduct a sensitivity analysis of the
+simulation outputs, which aims at determining how the output variability is related to the
+various simulation inputs. This information is complementary to the calibration results,
+and could provide additional information on how to further explore the parameter space
+with additional simulations runs.
+
 The UQ results demonstrate that given the seismic moment of an event, we can rule out
 much of the input stress parameter space, as the earthquake size is highly sensitive to
 the stress. This can potentially overcome one of the main challenges of using dynamic
-earthquake modeling for seismic hazard analysis, as the earthquake size is taken to be an
-input for hazard analysis, while it is an output of dynamic rupture models and thus it is
-difficult in practice to specify a given earthquake size. Our UQ approach would enable use
-of dynamic simulations by providing a set of NROY points that are likely to produce an earthquake
-of the desired size, ensuring that seismic hazard estimates are physics-based, while still
-capturing the underlying uncertainty associated with our simulations. This will enable
+earthquake modeling for seismic hazard analysis. In Probabilistic Seismic Hazard Analysis,
+the standard approach for estimating risk due to strong ground motions, analysts must
+first determine the distribution of earthquake sizes expected to occur over a given time period.
+This is usually done empirically based on very limited observations, and does not attempt
+to determine if such earthquake sizes are consistent with physical models.
+Our UQ approach could enable use of dynamic simulations in this approach by providing a set
+of NROY points that are consistent with the limited observations, and use those points to
+simulate a much more comprehensive set of ruptures consistent with the historical data.
+These physical simulations can capture the natural variability of events in a region,
+something that current empirical approaches cannot do in a physical way
+This will enable
 physics-based seismic hazard analysis that exploits simulations in a way not previously
-possible.
+possible, and give more robust estimates of future earthquake sizes and ground motions.
 
 \vskip6pt
 
@@ -492,7 +541,7 @@ The associated tutorial to describe this workflow, the \texttt{mogp\_emulator} c
 the FabSim3 commands can be found at the \texttt{fabmogp} site https://github.com/edaub/fabmogp/blob/master/Tutorial.rst
 }
 
-\aucontribute{EGD designed and implemented the UQ workflow and earthquake simulations. HA and DG
+\aucontribute{EGD designed and implemented the UQ workflow and earthquake simulations. HA, IM and DG
 implemented the FabSim3 plugin to carry out this workflow. All authors contributed to writing the
 associated tutorial and this manuscript.}
 
