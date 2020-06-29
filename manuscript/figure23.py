@@ -25,6 +25,7 @@ with open("covariance_scale.tex", "w") as outfile:
 
 analysis_points = 10000
 threshold = 3.
+known_value = 58.
 
 query_points = ed.sample(analysis_points)
 predictions = gp.predict(query_points)
