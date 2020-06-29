@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mogp_functions import load_results
 from mogp_emulator import fit_GP_MAP, HistoryMatching
 
-np.random.seed(734849)
+np.random.seed(73449)
 
 results_dir = os.path.join(os.getcwd(), "results/demo_localhost_16")
 
@@ -12,7 +12,7 @@ input_points, results, ed = load_results(results_dir)
 
 with open("lhc_values.tex", "w") as outfile:
     for (ip, res) in zip(input_points, results):
-        outfile.write("{:2f} & {:3f} & {:.3f} & {:.2f} \\".format(ip[0], ip[1], ip[2], res))
+        outfile.write("{:.2f} MPa & {:.3f} & {:.3f} & {:.2f} m km \\\\".format(ip[0], ip[1], ip[2], res))
         outfile.write("\n")
 
 gp = fit_GP_MAP(input_points, results)
