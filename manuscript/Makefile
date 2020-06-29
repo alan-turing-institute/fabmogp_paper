@@ -1,4 +1,3 @@
-PAPER = fabmogp_paper.pdf
 RS_IMAGES = PHILOSOPHICAL_TRANSACTIONS_A_CMYK.pdf\
             RS_Pubs_Logo_Line_CMYK.pdf\
 			RSTA_OpenAccesslogo_RGB.pdf\
@@ -16,7 +15,11 @@ FIG_23_FILES += $(foreach N,${NUM_RANGE},$(subst point_1,point_${N},${FIG_23_FIL
 SIM_TEXT = lhc_values.tex correlation_lengths.tex covariance_scale.tex
 FIGURES = figure1.pdf figure2.pdf figure3.pdf
 
-paper: ${PAPER}
+fabmogp_paper.pdf : fabmogp_paper.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
+	pdflatex $<
+	pdflatex $<
+	pdflatex $<
+	rm -rf $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@)
 
 $(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
 	 python $<
@@ -31,12 +34,6 @@ $(FIG_23_FILES) $(MOGP_OUT) : % :
 
 figure%.pdf : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
-
-%.pdf: %.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
-	pdflatex $<
-	pdflatex $<
-	pdflatex $<
-	rm -rf $*.aux $*.log $*.out
 
 .PHONY: clean
 clean:
