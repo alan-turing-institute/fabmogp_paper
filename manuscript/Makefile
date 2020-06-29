@@ -32,7 +32,7 @@ $(FIG_23_FILES) $(MOGP_OUT) : % :
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-figure%.pdf : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
+$(FIGURES) $(SIM_TEXT) : % : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 .PHONY: clean
