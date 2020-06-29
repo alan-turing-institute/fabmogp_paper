@@ -18,7 +18,7 @@ with open("lhc_values.tex", "w") as outfile:
 gp = fit_GP_MAP(input_points, results)
 
 with open("correlation_lengths.tex", "w") as outfile:
-    outfile.write("{:.3f}, {:.3f}, and {:.3f}".format(np.sqrt(np.exp(-gp.theta[:3]))))
+    outfile.write("{:.3f}, {:.3f}, and {:.3f}".format(*np.sqrt(np.exp(-gp.theta[:3]))))
 
 with open("covariance_scale.tex", "w") as outfile:
     outfile.write("{:.3f}".format(np.sqrt(np.exp(gp.theta[3]))))
