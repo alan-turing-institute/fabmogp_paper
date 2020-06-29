@@ -18,7 +18,10 @@ FIGURES = figure1.pdf figure2.pdf figure3.pdf
 
 paper: ${PAPER}
 
-{FIG_1_FILES_U} ${FIG_1_FILES_VY} &: figure_1_sim.py
+{FIG_1_FILES_U} ${FIG_1_FILES_VY} : fig_1.intermediate ;
+
+.INTERMEDIATE: fig_1.intermediate
+fig_1.intermediate: figure_1_sim.py
 	python $<
 
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
