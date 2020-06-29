@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mogp_functions import load_results
 from mogp_emulator import fit_GP_MAP
 
-np.random.seed("734849")
+np.random.seed(734849)
 
 results_dir = os.path.join(os.getcwd(), "results/demo_localhost_16")
 
