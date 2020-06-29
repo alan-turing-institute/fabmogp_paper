@@ -5,7 +5,7 @@ RS_IMAGES = PHILOSOPHICAL_TRANSACTIONS_A_CMYK.pdf\
 			RS_crossmark_logo.pdf
 RESULTS = /home/root/fabmogp/FabSim3/results/
 LOCALHOST = demo_localhost_16
-NPOINTS = 20
+NPOINTS = 2
 NUM_RANGE := $(shell seq 1 ${NPOINTS})
 FDFAULT_OUT = .py _x.dat _y.dat _U.dat
 MOGP_OUT = $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/,input_points.npy ed.pickle)
@@ -18,18 +18,18 @@ FIGURES = figure1.pdf figure2.pdf figure3.pdf
 
 paper: ${PAPER}
 
-{FIG_1_FILES_U} ${FIG_1_FILES_U}: figure_1_sim.py
+{FIG_1_FILES_U} ${FIG_1_FILES_VY} &: figure_1_sim.py
 	python $<
 
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
 	python $<
 
-${FIG_23_FILES}:
+${FIG_23_FILES} &:
 	fabsim localhost mogp_ensemble:demo,sample_points=${NPOINTS},seed=4742322
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-figure2.pdf figure3.pdf ${SIM_TEXT}: ${FIG_23_FILES}
+figure2.pdf figure3.pdf ${SIM_TEXT} &: ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 %.pdf: %.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
@@ -40,4 +40,8 @@ figure2.pdf figure3.pdf ${SIM_TEXT}: ${FIG_23_FILES}
 
 .PHONY: clean
 clean:
-	rm -rf ${PAPER}
+	rm -f ${PAPER} ${FIGURES} ${SIMTEXT}
+
+.PHONY: cleanall
+cleanall:
+	rm -f ${FIG_1_FILES_U} ${FIG_1_FILES_VY} ${FIG_23_FILES}
