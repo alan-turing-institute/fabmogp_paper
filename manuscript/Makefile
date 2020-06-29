@@ -8,37 +8,28 @@ LOCALHOST = demo_localhost_16
 NPOINTS = 20
 NUM_RANGE := $(shell seq 1 ${NPOINTS})
 FDFAULT_OUT = .py _x.dat _y.dat _U.dat
-MOGP_OUT = $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/,input_points.npy ed.pickle)
-FIG_1_FILES_U = $(addprefix results/data/rough_example_ufault,${FDFAULT_OUT})
-FIG_1_FILES_VY = $(subst U,vy,$(subst ufault,vybody,${FIG_1_FILES_U}))
-FIG_23_FILES_1 = $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/data/,$(addprefix simulation_1_ufault,${FDFAULT_OUT}))
+MOGP_OUT := $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/,input_points.npy ed.pickle)
+FIG_1_FILES_U := $(addprefix results/data/rough_example_ufault,${FDFAULT_OUT})
+FIG_1_FILES_VY := $(subst U,vy,$(subst ufault,vybody,${FIG_1_FILES_U}))
+FIG_23_FILES_1 := $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/data/,$(addprefix simulation_1_ufault,${FDFAULT_OUT}))
 FIG_23_FILES += $(foreach N,${NUM_RANGE},$(subst point_1,point_${N},${FIG_23_FILES_1}))
 SIM_TEXT = lhc_values.tex correlation_lengths.tex covariance_scale.tex
 FIGURES = figure1.pdf figure2.pdf figure3.pdf
 
 paper: ${PAPER}
 
-{FIG_1_FILES_U} ${FIG_1_FILES_VY} : fig1.intermediate ;
-
-.INTERMEDIATE: fig1.intermediate
-fig1.intermediate: figure_1_sim.py
-	python $<
+$(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
+	 python $<
 
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
 	python $<
 
-${FIG_23_FILES} ${MOGP_OUT} : fig23_sims.intermediate ;
-
-.INTERMEDIATE: fig23_sims.intermediate
-fig23_sims.intermediate:
+$(FIG_23_FILES) $(MOGP_OUT) : % :
 	fabsim localhost mogp_ensemble:demo,sample_points=${NPOINTS},seed=4742322
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-figure2.pdf figure3.pdf ${SIM_TEXT} : fig23_figs.intermediate ;
-
-.INTERMEDIATE: fig23_figs.intermediate
-fig23_figs.intermediate: figure23.py ${FIG_23_FILES} ${MOGP_OUT}
+figure%.pdf : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 %.pdf: %.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
