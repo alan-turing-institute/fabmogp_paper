@@ -29,10 +29,10 @@ Eric G. Daub$^{1}$, Hamid Arabnejad$^{2}$, Imran Mahmood$^{2}$ and Derek Groen$^
 $^{2}$Brunel University London}
 
 %%%% Subject entries to be placed here %%%%
-\subject{Uncertainty Quantification, Surrogate Modeling, Earthquake Mechanics}
+\subject{Uncertainty Quantification, Surrogate Modelling, Earthquake Mechanics}
 
 %%%% Keyword entries to be placed here %%%%
-\keywords{xxxx, xxxx, xxxx}
+\keywords{Model Calibration, Simulation Management}
 
 %%%% Insert corresponding author and its email address}
 \corres{Eric G. Daub\\
@@ -529,16 +529,21 @@ source software licenses:
    \item \texttt{mogp\_emulator} https://github.com/alan-turing-institute/mogp\_emulator
    \item \texttt{FabSim3} https://github.com/djgroen/fabsim3
    \item \texttt{fdfault} https://github.com/egdaub/fdfault
-   \item \texttt{seistools} https://github.com/egdaub/seistools
+\end{itemize}
+The FabSim3 plugin that implements all of the simulations and analysis described in this work
+is also available under a free and open source licese on Github:
+\begin{itemize}
    \item \texttt{fabmogp} https://github.com/edaub/fabmogp
 \end{itemize}
+This repository also contains the associated tutorial to describe this workflow,
+the underlying \texttt{mogp\_emulator} code, and the FabSim3 commands can be found in this
+repository as well at https://github.com/edaub/fabmogp/blob/master/Tutorial.rst.
 The computational
 environment and associated scripts and build instructions used to produce the simulations,
 figures, and the typeset manuscript is available as a
-Docker image in a Github repository with instructions on building and running the simulations is
+Docker image in a Github repository. The repository contains detailed instructions on building
+and running the simulations is
 available at https://github.com/alan-turing-institute/fabmogp\_paper.
-The associated tutorial to describe this workflow, the \texttt{mogp\_emulator} code, and
-the FabSim3 commands can be found at the \texttt{fabmogp} site https://github.com/edaub/fabmogp/blob/master/Tutorial.rst
 }
 
 \aucontribute{EGD designed and implemented the UQ workflow and earthquake simulations. HA, IM and DG
