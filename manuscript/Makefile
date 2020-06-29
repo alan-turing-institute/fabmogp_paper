@@ -18,21 +18,27 @@ FIGURES = figure1.pdf figure2.pdf figure3.pdf
 
 paper: ${PAPER}
 
-{FIG_1_FILES_U} ${FIG_1_FILES_VY} : fig_1.intermediate ;
+{FIG_1_FILES_U} ${FIG_1_FILES_VY} : fig1.intermediate ;
 
-.INTERMEDIATE: fig_1.intermediate
-fig_1.intermediate: figure_1_sim.py
+.INTERMEDIATE: fig1.intermediate
+fig1.intermediate: figure_1_sim.py
 	python $<
 
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
 	python $<
 
-${FIG_23_FILES} ${MOGP_OUT} &:
+${FIG_23_FILES} ${MOGP_OUT} : fig23_sims.intermediate ;
+
+.INTERMEDIATE: fig23_sims.intermediate
+fig23_sims.intermediate:
 	fabsim localhost mogp_ensemble:demo,sample_points=${NPOINTS},seed=4742322
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-figure2.pdf figure3.pdf ${SIM_TEXT} &: figure23.py ${FIG_23_FILES} ${MOGP_OUT}
+figure2.pdf figure3.pdf ${SIM_TEXT} : fig23_figs.intermediate ;
+
+.INTERMEDIATE: fig23_figs.intermediate
+fig23_figs.intermediate: figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 %.pdf: %.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
