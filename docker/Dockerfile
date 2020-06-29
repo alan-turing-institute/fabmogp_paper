@@ -11,8 +11,6 @@ ARG FabSim3_dir=FabSim3
 ARG FabSim3_repo=https://github.com/djgroen/FabSim3.git
 ARG fdfault_dir=fdfault
 ARG fdfault_repo=https://github.com/egdaub/fdfault.git
-ARG seistools_dir=seistools
-ARG seistools_repo=https://github.com/egdaub/seistools.git
 ARG mogp_emulator_dir=mogp_emulator
 ARG mogp_emulator_repo=https://github.com/alan-turing-institute/mogp_emulator.git
 ARG output_dir=results
@@ -43,14 +41,6 @@ RUN mkdir -p ${mogp_emulator_dir} && \
     cd ${mogp_emulator_dir} && \
     python setup.py install
 
-# clone seistools github repository
-WORKDIR ${base_dir}
-RUN mkdir -p ${seistools_dir} && \
-    git clone ${seistools_repo} ${seistools_dir} && \
-    cd ${seistools_dir} && \
-    pip install -r requirements.txt && \
-    python setup.py install
-
 # clone fdfault github repository
 WORKDIR ${base_dir}
 RUN pwd && ls
@@ -68,7 +58,7 @@ RUN mkdir -p ${FabSim3_dir} && \
 
 # generate machines_user.yml file
 RUN cp ${FabSim3_dir}/deploy/machines_user_example.yml ${FabSim3_dir}/deploy/machines_user.yml
-RUN sed -i "s/your-username/`whoami`/g;s#~/Codes/FabSim#${base_dir}/${FabSim3_dir}#g"  ${FabSim3_dir}/deploy/machines_user.yml
+RUN sed -i "s/your-username/`whoami`/g;s#~/Codes/FabSim#${base_dir}/${FabSim3_dir}#g" ${FabSim3_dir}/deploy/machines_user.yml
 RUN echo '\n\
 localhost:\n\
   mpi_exec : "/usr/bin/mpiexec"\n\
@@ -89,6 +79,7 @@ RUN ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 RUN cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
 RUN chmod og-wx ~/.ssh/authorized_keys
 RUN ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+RUN echo "StrictHostKeyChecking accept-new" > ~/.ssh/config
 
 
 WORKDIR ${base_dir}/${FabSim3_dir}
