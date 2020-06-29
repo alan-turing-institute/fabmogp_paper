@@ -1,19 +1,21 @@
+import os
 from earthquake import create_problem, run_simulation
 import numpy as np
 import matplotlib.pyplot as plt
 import fdfault.analysis
 
 name = "rough_example"
-fdfault_path = "/Users/edaub/Projects/fdfault/"
+results_dir = os.path.join(os.getcwd(), "results")
+fdfault_path = "/home/root/fabmogp/fdfault/"
 
-create_problem((-100., 0.25, 1.), name=name, output_dir=fdfault_path, vy_snapshot=True)
+create_problem((-100., 0.25, 1.), name=name, output_dir=results_dir, vy_snapshot=True)
 run_simulation(n_proc=4, mpi_exec="/usr/local/bin/mpiexec",
-               output_dir=fdfault_path, fdfault_exec=fdfault_path)
+               output_dir=results_dir, fdfault_exec=fdfault_path)
 
-vybody = fdfault.analysis.output(name, "vybody", datadir = fdfault_path+"data")
+vybody = fdfault.analysis.output(name, "vybody", datadir = os.path.join(results_dir, "data"))
 vybody.load()
 
-ufault = fdfault.analysis.output(name, "ufault", datadir = fdfault_path+"data")
+ufault = fdfault.analysis.output(name, "ufault", os.path.join(results_dir, "data"))
 ufault.load()
 
 fig = plt.figure(figsize=(6.5,3))
@@ -36,4 +38,4 @@ plt.tight_layout()
 fig.text(0.005, 0.95, "(a)")
 fig.text(0.505, 0.95, "(b)")
 
-plt.savefig("figure1.pdf")
+plt.savefig(os.path.join(os.getcwd(), "figure1.pdf"))
