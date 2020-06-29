@@ -6,22 +6,22 @@ from mogp_emulator import fit_GP_MAP
 
 np.random.seed("734849")
 
-results_dir = os.path.join(os.getcwd(), "results/RUNS")
+results_dir = os.path.join(os.getcwd(), "results/demo_localhost_16")
 
 input_points, results, ed = load_results(results_dir)
 
 with open("lhc_values.tex", "w") as outfile:
     for (ip, res) in zip(input_points, results):
-        outfile.write("{:3f} & {:3f} & {:3f} & {:3f} \\".format(ip[0], ip[1], ip[2], res))
+        outfile.write("{:2f} & {:3f} & {:.3f} & {:.2f} \\".format(ip[0], ip[1], ip[2], res))
         outfile.write("\n")
 
 gp = fit_GP_MAP(input_points, results)
 
 with open("correlation_lengths.tex", "w") as outfile:
-    outfile.write("{:3f}, {:3f}, and {:3f}".format(np.sqrt(np.exp(-gp.theta[:3]))))
+    outfile.write("{:.3f}, {:.3f}, and {:.3f}".format(np.sqrt(np.exp(-gp.theta[:3]))))
 
 with open("covariance_scale.tex", "w") as outfile:
-    outfile.write("{:3f}".format(np.sqrt(np.exp(gp.theta[3]))))
+    outfile.write("{:.3f}".format(np.sqrt(np.exp(gp.theta[3]))))
 
 analysis_points = 10000
 threshold = 3.
