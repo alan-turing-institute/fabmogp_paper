@@ -2,7 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mogp_functions import load_results
-from mogp_emulator import fit_GP_MAP
+from mogp_emulator import fit_GP_MAP, HistoryMatching
 
 np.random.seed(734849)
 
@@ -31,8 +31,8 @@ predictions = gp.predict(query_points)
 
 # set up history matching
 
-hm = mogp_emulator.HistoryMatching(obs=known_value, expectations=predictions,
-                                   threshold=threshold)
+hm = HistoryMatching(obs=known_value, expectations=predictions,
+                     threshold=threshold)
 
 implaus = hm.get_implausibility()
 NROY = hm.get_NROY()
