@@ -24,12 +24,12 @@ paper: ${PAPER}
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
 	python $<
 
-${FIG_23_FILES} &:
+${FIG_23_FILES} ${MOGP_OUT} &:
 	fabsim localhost mogp_ensemble:demo,sample_points=${NPOINTS},seed=4742322
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-figure2.pdf figure3.pdf ${SIM_TEXT} &: ${FIG_23_FILES} ${MOGP_OUT}
+figure2.pdf figure3.pdf ${SIM_TEXT} &: figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 %.pdf: %.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
