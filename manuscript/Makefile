@@ -11,7 +11,7 @@ figure1.pdf: figure1.py
 	python $<
 
 figure2.pdf figure3.pdf ${SIM_TEXT}: figure23.py
-	fabsim localhost mogp_ensemble:demo,sample_points=20,seed=84362
+	fabsim localhost mogp_ensemble:demo,sample_points=20,seed=8436
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/${LOCALHOST}
 	python $<
