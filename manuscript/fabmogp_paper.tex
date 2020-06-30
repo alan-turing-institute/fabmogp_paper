@@ -68,7 +68,8 @@ in the Earth based on earthquake observations.
 \section{Introduction}
 
 Scientists frequently use computer simulations to study complex phenomena that are poorly constrained by
-observational data such as climate, earthquakes, tsunamis, and other physical systems. These computer
+observational data such as climate \cite{climate}, earthquakes \cite{earthquakedynamics},
+tsunamis \cite{tsunami}, and other physical systems. These computer
 simulations usually involve solving complex partial differential equations, and due to the computational
 cost such simulations can rarely be run at the resolution needed to capture all of the relevant physics.
 
@@ -80,15 +81,16 @@ cost such simulations can rarely be run at the resolution needed to capture all 
 \maketitle
 
 Because of this, simulations have to capture missing physics in an often ad hoc way, and it is difficult to
-estimate parameters for these models directly. This poses a challenge for model calibration, as there
+estimate parameters for these models directly \cite{calibration}.
+This poses a challenge for model calibration, as there
 is a high dimensional input space from which only a small subset of parameter choices can plausibly
 reproduce the observational data, while only a limited number of model evaluations are computationally
 feasible.
 
 A common approach to interrogate the real world using these models is to run a limited ensemble of
 simulations and fit a \emph{surrogate} model (also referred to in some contexts as an \emph{emulator})
-that is able to approximate the expensive simulation.
-This is frequently done using Gaussian Process (GP) regression to approximate the simulations,
+that is able to approximate the expensive simulation \cite{experimentaldesign}.
+This is frequently done using Gaussian Process (GP) regression to approximate the simulations \cite{gprw},
 as GPs can be flexibly specified, are straightforward to fit using standard linear algebra procedures and
 provide robust error estimates of their predictions.
 The GP emulator is then used to query densely from the input space to carry out model calibration and
@@ -112,7 +114,8 @@ with additional simulations runs.
 However, while surrogate modelling approaches are common among statistics researchers, they are
 less frequently used by the domain experts that develop and run the physical models. Because of this,
 simulation studies often do not conduct rigorous UQ on their outputs, and parameter selection is
-often performed by hand-tuning or trial-and-error approaches. A major goal of the software libraries
+often performed by hand-tuning or trial-and-error approaches due to the high computational expense
+of the underlying simulation \cite{terashake,m8}. A major goal of the software libraries
 used in this paper is to facilitate domain experts performing UQ on simulation outputs without
 needing an in-depth understanding of the underlying statistical methods.
 
@@ -163,16 +166,16 @@ models the number of inputs is often limited, so in practice a more common appro
 the design in a way that attempts to maximise the accuracy of the underlying approximation. This can be
 further split into two approaches: one-shot designs, that choose all simulation points at once,
 or sequential designs that iteratively choose the next best point to simulate based on the existing
-information.
+information \cite{mice}.
 
-In this study, we use a one-shot design based on a Latin Hypercube sampling approach. In a Latin
+In this study, we use a one-shot design based on a Latin Hypercube sampling approach \cite{lhc}. In a Latin
 Hypercube, we guarantee that we draw from all quantiles of each underlying parameter. In other words,
 for a design with 4 points, a Latin Hypercube will ensure that the 4 chosen points are each from
 a different quartile of each underlying parameter. The exact choice of values is done randomly
 within this constraint, so Latin Hypercube designs do have some variability associated with them.
 
 For small designs, Latin Hypercubes have been shown to perform better than Monte Carlo sampling under
-certain circumstances, though they are usually not as effective as sequential designs. However, because
+certain circumstances \cite{lhc}, though they are usually not as effective as sequential designs. However, because
 of their simplicity, we use them in this example as a straightforward way to draw samples for
 building a surrogate model of the underlying simulator.
 
@@ -183,7 +186,7 @@ Gaussian Processes are a non-parametric model for regression that approximates t
 function as a multivariate normal distribution. Because the simulator is deterministic,
 a GP interpolates between the known simulation points in a robust way and provides uncertainty
 estimates for any predictions that it makes. Because it has an uncertainty estimate, it is commonly
-used in UQ workflows.
+used in UQ workflows \cite{calibration,histmatch,mice}.
 
 A Gaussian Process is specified by a mean function and a covariance function.
 We use a zero mean GP with a Squared Exponential Kernel in this
@@ -227,16 +230,16 @@ This finds a set of correlations lengths and the overall covariance scale.
 While the simulator is deterministic and we thus should theoretically be able to use Eq.~(\ref{sqexp})
 directly, in practice numerical round-off errors can cause the Cholesky factorisation to be
 unstable. To mitigate this, a ``nugget'' term is added to the diagonal that adds a small amount
-of noise to stabilise the matrix inversion. There are several ways to estimate the nugget: it can
+of noise to stabilise the matrix inversion \cite{nugget}. There are several ways to estimate the nugget: it can
 be fixed (known noise level), it can be fit as an additional hyperparameter, or it can be found
 adaptively by factorising the matrix with increasing noise levels until the algorithm succeeds.
-In this example, we use the adaptive approach as it tends to be the most robust way to fit an
+In this example, we use the adaptive approach as we find it tends to be the most robust way to fit an
 emulator with a small nugget.
 
 \subsection{History Matching}
 
 Once we have predictions for a large number of query points, it is straightforward to compare with observations.
-History Matching is one way to perform this comparison -- in History Matching, we compute an implausibility
+History Matching is one way to perform this comparison \cite{histmatch} -- in History Matching, we compute an implausibility
 metric $I$ for each query point by determining the number of standard deviations between the observation and the
 predicted mean from the approximate model:
 \begin{align}\label{implaus}
@@ -255,12 +258,12 @@ As noted above, there are three types of uncertainty that we need to account for
 \item Model discrepancy, which is uncertainty about the model itself, and measures how well the computational model represents reality.
 \end{enumerate}
 
-In practice, 1. and 2. are straightforward to determine, while 3. is much trickier. However, many studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
+In practice, 1. and 2. are straightforward to determine, while 3. is much trickier \cite{modeldiscrepancy}. However, studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
 
 \subsection{Implementation with mogp\_emulator}
 
 The above components are implemented in the \texttt{mogp\_emulator} software library, which is
-written in Python and builds on the Numpy and Scipy libraries to handle the array operations and
+written in Python and builds on the Numpy and Scipy libraries \cite{scipy} to handle the array operations and
 linear algebra, and probability distributions and optimisation libraries, respectively. The
 library is released under a permissive MIT license and is under continued development. The
 package includes a number of features not used in this example, including flexible mean function
@@ -279,7 +282,7 @@ and the area simulataneously).
 \subsection{Dynamic Earthquake Rupture}
 
 Earthquake slip can be computed by solving the elastic wave equation coupled to a frictional failure model
-on the fault. The simulation calculates the size of an earthquake (which can be measured from seismic data)
+on the fault \cite{earthquakedynamics}. The simulation calculates the size of an earthquake (which can be measured from seismic data)
 given an initial stress tensor in the material (a quantity that is poorly constrained from seismic data).
 The simulation computes the earthquake size based on the stress tensor combined with the fault geometry and
 frictional failure properties, both of which are taken to be known here for the sake of simplicity.
@@ -296,8 +299,8 @@ the bumpy line is the rough fault surface, and the color scale shows the propaga
 from the fault due to the slip on the fault.
 
 Complicating matters is the fact that earthquake faults are not smooth planes, but instead rough bumpy surfaces
-with a fractal geometry. An important consequence of this is that the smallest wavelength bumps have the
-largest effect on the resulting forces. This is what makes earthquake problems challenging to model: at a given
+with a fractal geometry \cite{fractalfault}. An important consequence of this is that the smallest wavelength bumps have the
+largest effect on the resulting forces \cite{roughfault}. This is what makes earthquake problems challenging to model: at a given
 model resolution, you are omitting details that play an important role. This small scale roughness that is left
 out of the model must instead be accounted for when setting the strength of the fault. However, for this
 demonstration we will assume that both the rough geometry of the fault and the fault strength are known in
@@ -331,7 +334,7 @@ where $v_x$ and $v_y$ are the particle velocity components, $\sigma_{xx}, \sigma
 are the threestress tensor has three components (two compressive and one shear), $\rho$ is material
 density, $\lambda$ is the first Lam\'{e} parameter, and $G$ is the shear modulus.
 
-Frictional failure follows the slip weakening friction law, where the friction coefficient $\mu$ depends
+Frictional failure follows the slip weakening friction law \cite{slipweak}, where the friction coefficient $\mu$ depends
 on the fault slip $U$ as
 \begin{align}\label{slipweak}
 \begin{split}
@@ -366,9 +369,7 @@ $D_c$ & 0.8 m \\
 The fault profile is generated following a fractal geometry by creating a self-similar power spectrum in
 Fourier space with random phase and taking the real part of the FFT and removing the linear trend.
 The RMS height is fixed to be smaller than the fault length by a factor of $10^{-2}$, which is typical
-for natural faults. Roughness is cut off at wavelengths less than 20 grid points. The rough fault generation
-routine, as well as other utilities for dealing with creating the rough fault simulations,
-are implemented in the \texttt{seistools} Python repository.
+for natural faults. Roughness is cut off at wavelengths less than 20 grid points.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
 While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations.
@@ -480,7 +481,7 @@ to the seismic moment. Values range from 35 m km to around 250 m km.
 \subsection{Surrogate Model}
 
 From these simulator runs, we fit a Gaussian Process emulator to the outputs using the default
-\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B to minimise the
+\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B \cite{lbfgs}to minimise the
 negative marginal log-likelihood, and use gradient information as the log-likelihood gradient
 can be computed in closed form and requires little computational overhead beyond performing the
 Cholesky decomposition that is cached from the log-likelihood computation.
@@ -538,7 +539,6 @@ values to improve our understanding of the problem and make predictions.
 \label{fig_implausibility}
 \end{figure}
 
-
 \section{Conclusion}
 
 This paper and the associated tutorial demonstrate the use of a variety of computational tools
@@ -556,7 +556,7 @@ workflow and is easily adaptable to other physical systems.
 The UQ results demonstrate that given the seismic moment of an event, we can rule out
 much of the input stress parameter space, as the earthquake size is highly sensitive to
 the stress. This can potentially overcome one of the main challenges of using dynamic
-earthquake modeling for seismic hazard analysis. In Probabilistic Seismic Hazard Analysis,
+earthquake modeling for seismic hazard analysis. In Probabilistic Seismic Hazard Analysis \cite{psha},
 the standard approach for estimating risk due to strong ground motions, analysts must
 first determine the distribution of earthquake sizes expected to occur over a given time period.
 This is usually done empirically based on very limited observations, and does not attempt
@@ -564,7 +564,7 @@ to determine if such earthquake sizes are consistent with physical models.
 Our UQ approach could enable use of dynamic simulations in this approach by providing a set
 of NROY points that are consistent with the limited observations, and use those points to
 simulate a much more comprehensive set of ruptures consistent with the historical data
-to supplement the limited existing strong motion records.
+to supplement the limited existing strong motion records \cite{gmpe}.
 These physical simulations can thus capture the natural variability of events in a region,
 something that current empirical approaches cannot do in a physical way.
 This will enable
