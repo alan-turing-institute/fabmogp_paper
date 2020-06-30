@@ -22,7 +22,8 @@ fabmogp_paper.pdf : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} $
 	bibtex $(subst .tex,.aux,$<)
 	pdflatex $<
 	pdflatex $<
-	rm -f $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@) $(subst .pdf,.bbl,$@)
+	rm -f $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@)
+	rm -f $(subst .pdf,.blg,$@) $(subst .pdf,.bbl,$@)
 
 $(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
 	 python $<
