@@ -95,7 +95,7 @@ RUN echo 'export PS1="\[\033[01;34m\][fabmogp]\[\033[01;31m\] \w\[\033[00m\] \$ 
 RUN echo 'export PATH='${base_dir}'/'${FabSim3_dir}'/bin:$PATH' >> /root/.bashrc
 RUN echo 'export PYTHONPATH='${base_dir}'/'${FabSim3_dir}':$PYTHONPATH' >> /root/.bashrc
 RUN echo 'export PYTHONPATH='${base_dir}'/'${FabSim3_dir}'/plugins/fabmogp:$PYTHONPATH' >> /root/.bashrc
-RUN echo 'export OUTPUT='${base_dir}'/'${output} >> /root/.bashrc
+RUN echo 'export OUTPUT='${base_dir}'/'${output_dir} >> /root/.bashrc
 
 # clone paper repo
 WORKDIR ${base_dir}
@@ -105,5 +105,8 @@ RUN mkdir -p ${paper_dir} && \
 # set up outputs
 WORKDIR ${base_dir}
 RUN mkdir -p ${output_dir}
+
+# change to manuscript directory
+WORKDIR ${basedir}/${paperdir}
 
 ENTRYPOINT  service ssh restart > /dev/null 2>&1 && /bin/bash
