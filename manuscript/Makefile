@@ -13,7 +13,8 @@ FIG_1_FILES_VY := $(subst U,vy,$(subst ufault,vybody,${FIG_1_FILES_U}))
 FIG_23_FILES_1 := $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/data/,$(addprefix simulation_1_ufault,${FDFAULT_OUT}))
 FIG_23_FILES += $(foreach N,${NUM_RANGE},$(subst point_1,point_${N},${FIG_23_FILES_1}))
 SIM_TEXT = lhc_values.tex correlation_lengths.tex covariance_scale.tex
-FIGURES = figure1.pdf figure2.pdf figure3.pdf
+FIG23 = figure2.pdf figure3.pdf
+FIGURES = ${FIG23} figure1.pdf
 
 fabmogp_paper.pdf : fabmogp_paper.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
 	pdflatex $<
@@ -32,7 +33,7 @@ $(FIG_23_FILES) $(MOGP_OUT) : % :
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS}/${LOCALHOST} results/
 
-$(FIGURES) $(SIM_TEXT) : % : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
+$(FIG23) $(SIM_TEXT) : % : figure23.py ${FIG_23_FILES} ${MOGP_OUT}
 	python $<
 
 .PHONY: clean
