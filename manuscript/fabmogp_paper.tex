@@ -215,7 +215,7 @@ operations while variance predictions require $\mathcal O(n^2)$ operations.
 In order to make predictions, we need to fit the hyperparameter values for $\theta_i$ and $\sigma$.
 A common approach is to use the maximum marginal likelihood, which is easy to compute for a GP once
 the covariance matrix has been factorised:
-\begin{align}\label{sqexp}
+\begin{align}\label{loglike}
 \begin{split}
 \log p(y|x) = -\frac{1}{2} y^T K(x, x)^{-1} y - \sum_i \log L_{ii} - \frac{n}{2}\log 2\pi
 \end{split}
