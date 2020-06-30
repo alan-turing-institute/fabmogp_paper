@@ -335,10 +335,10 @@ computational level such that it only takes a short amount of time to run. In a 
 elastic wave equation can be written in velocity/stress form as
 \begin{align}\label{elasticwave}
 \begin{split}
-\rho\frac{\partial v_x}{\partial t} &= \frac{\partial \sigma_{xx}}{\partial_x} + \frac{\partial \sigma_{xy}}{\partial_y}\\
-\rho\frac{\partial v_y}{\partial t} &= \frac{\partial \sigma_{xy}}{\partial_x} + \frac{\partial \sigma_{yy}}{\partial_y}\\
-\frac{\partial \sigma_{xx}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial_x} + \frac{\partial v_y}{\partial_y}\right) + G \frac{\partial v_x}{\partial x}\\
-\frac{\partial \sigma_{yy}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial_x} + \frac{\partial v_y}{\partial_y}\right) + G \frac{\partial v_y}{\partial y}\\
+\rho\frac{\partial v_x}{\partial t} &= \frac{\partial \sigma_{xx}}{\partial x} + \frac{\partial \sigma_{xy}}{\partial y}\\
+\rho\frac{\partial v_y}{\partial t} &= \frac{\partial \sigma_{xy}}{\partial x} + \frac{\partial \sigma_{yy}}{\partial y}\\
+\frac{\partial \sigma_{xx}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial x} + \frac{\partial v_y}{\partial y}\right) + 2G \frac{\partial v_x}{\partial x}\\
+\frac{\partial \sigma_{yy}}{\partial t} &= \lambda\left(\frac{\partial v_x}{\partial x} + \frac{\partial v_y}{\partial y}\right) + 2G \frac{\partial v_y}{\partial y}\\
 \frac{\partial \sigma_{xy}}{\partial t} &= G \left(\frac{\partial v_x}{\partial y} + \frac{\partial v_y}{\partial x} \right)
 \end{split}
 \end{align}
@@ -382,7 +382,8 @@ The fault profile is generated following a fractal geometry by creating a self-s
 Fourier space with random phase and taking the real part of the FFT and removing the linear trend.
 The RMS deviation from planarity is fixed to be smaller than the fault length by a factor of $10^{-2}$,
 which is typical
-for natural faults \cite{dunhametal}. Roughness is cut off at wavelengths less than 20 grid points.
+for natural faults \cite{dunhametal}. Roughness is cut off at wavelengths shorter than 20 times the
+grid spacing.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
 While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations:
@@ -490,7 +491,7 @@ Normal Stress & Shear/Normal Stress & Normal Stress Ratio & Simulator Output \\
 The simulator output is calculated by integrating the final slip at the end of the simulation over the
 entire fault plane using Simpson's rule. Because all simulations have the same shear modulus and our
 simulations are 2D, we simply use this integrated slip as the simulator output as it is proportional
-to the seismic moment. Values range from 35 m km to around 250 m km.
+to the seismic moment. Values range from 35 m km to around 300 m km.
 
 \subsection{Surrogate Model}
 
