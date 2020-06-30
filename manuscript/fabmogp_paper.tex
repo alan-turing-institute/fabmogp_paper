@@ -25,8 +25,8 @@
 Eric G. Daub$^{1}$, Hamid Arabnejad$^{2}$, Imran Mahmood$^{2}$ and Derek Groen$^{2}$}
 
 %%%%%%%%% Insert author address here
-\address{$^{1}$Alan Turing Institute, London\\
-$^{2}$Brunel University London}
+\address{$^{1}$Research Engineering Group, Alan Turing Institute, London, UK\\
+$^{2}$Department of Computer Science, Brunel University London, London, UK}
 
 %%%% Subject entries to be placed here %%%%
 \subject{Uncertainty Quantification, Surrogate Modelling, Earthquake Mechanics}
@@ -99,7 +99,8 @@ This work explores use of a software library designed to carry out surrogate mod
 in this workflow), which implements the procedures described in this work in addition to a
 number of other techniques. While we focus on this approach in this paper,
 other UQ approaches can be used to examine the outputs of the simulations shown here.
-For instance, the VECMA toolkit also has a UQ library \texttt{EasyVVUQ}, which can
+For instance, the VECMA toolkit \cite{vecma-tk} also has a UQ library \texttt{EasyVVUQ}
+\cite{easyvvuq}, which can
 draw samples and collate experimental runs in addition to carrying out a number of
 UQ approaches, which are complementary to the focus in this study on model calibration.
 For instance, another approach to UQ would be to conduct a sensitivity analysis of the
@@ -119,7 +120,7 @@ This problem additionally presents a significant computational challenge, as it 
 and collating the results of a potentially large number of high performance computer simulations.
 Researchers may need to carry out simulations on a number of different computational resources at
 different resolutions, which poses a problem for reproducibility. To manage this problem, we
-use FabSim3 to generate templates for the various pieces of this work, from drawing samples
+use FabSim3 \cite{fabsim} to generate templates for the various pieces of this work, from drawing samples
 and carrying out the simulations to analysing the results.
 
 In this paper, we describe a number of computational tools designed to implement a comprehensive
@@ -606,26 +607,13 @@ associated tutorial and this manuscript.}
 
 \competing{The author(s) declare that they have no competing interests.}
 
-\funding{Insert funding text here.}
+\funding{EGD HA, IM and DG have received funding from the European Union Horizon 2020 research and innovation programme under grant agreement No 800925 (VECMA) and 824115 (HiDALGO).}
 
 \ack{Insert acknowledgment text here.}
 
 %%%%%%%%%% Insert bibliography here %%%%%%%%%%%%%%
 
-\begin{thebibliography}{9}
-
-\bibitem{1} Allwood JM, Cullen JM. 2011 \textit{Sustainable materials:  with both eyes open}.
-Cambridge, UK: UIT Cambridge. See \href{http://www.withbotheyesopen.com}{http://www.withbotheyesopen.com}.
-
-\bibitem{2}  MacKay DJC. 2008  \textit{Sustainable energy:  without the hot air}.
- Cambridge, UK: UIT Cambridge. See \href{http://www.withouthotair.com}{http://www.withouthotair.com}.
-
-\bibitem{3} Gallman PG. 2011  \textit{Green alternatives and national energy strategy: the facts
- behind the headlines}.  Baltimore,\ MD: Johns Hopkins University Press.
-
-\bibitem{4} MacKay DJC. 2013.  Solar energy in the context of energy use, energy transportation, and
- energy storage. \textit{Proc. R. Soc. A} \textbf{371}.
-
-\end{thebibliography}
+\bibliographystyle{rsta}
+\bibliography{fabmogp_paper}
 
 \end{document}

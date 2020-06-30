@@ -18,6 +18,7 @@ FIGURES = ${FIG23} figure1.pdf
 
 fabmogp_paper.pdf : fabmogp_paper.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
 	pdflatex $<
+	bibtex $<
 	pdflatex $<
 	pdflatex $<
 	rm -rf $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@)
