@@ -2,6 +2,7 @@ RS_IMAGES = PHILOSOPHICAL_TRANSACTIONS_A_CMYK.pdf\
             RS_Pubs_Logo_Line_CMYK.pdf\
 			RSTA_OpenAccesslogo_RGB.pdf\
 			RS_crossmark_logo.pdf
+RS_TEX = rsta.bst rstransa.cls
 RESULTS = /home/root/fabmogp/FabSim3/results/
 LOCALHOST = demo_localhost_16
 NPOINTS = 20
@@ -14,14 +15,14 @@ FIG_23_FILES_1 := $(addprefix results/${LOCALHOST}/RUNS/sample_point_1/data/,$(a
 FIG_23_FILES += $(foreach N,${NUM_RANGE},$(subst point_1,point_${N},${FIG_23_FILES_1}))
 SIM_TEXT = lhc_values.tex correlation_lengths.tex covariance_scale.tex
 FIG23 = figure2.pdf figure3.pdf
-FIGURES = ${FIG23} figure1.pdf
+FIGURES = ${FIG23} figure1.pdf FabMogpMap.pdf
 
-fabmogp_paper.pdf : fabmogp_paper.tex ${RS_IMAGES} ${SIM_TEXT} ${FIGURES}
+fabmogp_paper.pdf : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
 	bibtex $(subst .tex,.aux,$<)
 	pdflatex $<
 	pdflatex $<
-	rm -rf $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@)
+	rm -f $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@) $(subst .pdf,.bbl,$@)
 
 $(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
 	 python $<
