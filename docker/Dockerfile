@@ -107,6 +107,6 @@ WORKDIR ${base_dir}
 RUN mkdir -p ${output_dir}
 
 # change to manuscript directory
-WORKDIR ${basedir}/${paperdir}
+WORKDIR ${base_dir}/${paper_dir}
 
 ENTRYPOINT  service ssh restart > /dev/null 2>&1 && /bin/bash
