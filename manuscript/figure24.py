@@ -53,7 +53,7 @@ NROY = hm.get_NROY()
 # make some plots
 
 plt.figure(figsize=(4,3))
-plt.plot([x for x in len(validations.mean)],
+plt.plot([x for x in range(len(validations.mean))],
          (validations.mean - validation_results)/np.sqrt(validations.unc),
          marker="o", color="blue", linewidth=0.)
 plt.plot([-1., 11.], [-2., -2.], color="orange", linestyle="--", alpha=0.5)
