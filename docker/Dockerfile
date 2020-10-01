@@ -37,7 +37,7 @@ RUN cd /usr/local/bin && \
 # clone mogp_emulator github repository
 WORKDIR ${base_dir}
 RUN mkdir -p ${mogp_emulator_dir} && \
-    git clone --single-branch -b devel ${mogp_emulator_repo} ${mogp_emulator_dir} && \
+    git clone ${mogp_emulator_repo} ${mogp_emulator_dir} && \
     cd ${mogp_emulator_dir} && \
     python setup.py install
 
@@ -83,7 +83,6 @@ RUN echo "StrictHostKeyChecking accept-new" > ~/.ssh/config
 
 
 WORKDIR ${base_dir}/${FabSim3_dir}
-RUN fab localhost install_plugin:FabDummy
 RUN fab localhost install_plugin:fabmogp
 
 WORKDIR ${base_dir}/${FabSim3_dir}/plugins/fabmogp
@@ -100,7 +99,9 @@ RUN echo 'export OUTPUT='${base_dir}'/'${output_dir} >> /root/.bashrc
 # clone paper repo
 WORKDIR ${base_dir}
 RUN mkdir -p ${paper_dir} && \
-    git clone ${paper_repo} ${paper_dir}
+    git clone ${paper_repo} ${paper_dir} && \
+    cd ${paper_dir} && \
+    git checkout --force validation
 
 # set up outputs
 WORKDIR ${base_dir}
