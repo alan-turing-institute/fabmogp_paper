@@ -5,9 +5,9 @@ RS_IMAGES = PHILOSOPHICAL_TRANSACTIONS_A_CMYK.pdf\
             RS_crossmark_logo.pdf
 RS_TEX = rsta.bst rstransa.cls
 LOCALHOST = demo_localhost_16
-RESULTS = /home/root/fabmogp/FabSim3/results/
-SIMDIR = /home/root/FabSim3/results/
-TRAIN_DIR = results/training
+RESULTS = /home/root/fabmogp/FabSim3/results/${LOCALHOST}
+SIMDIR = /home/root/FabSim3/results/${LOCALHOST}
+TRAIN_DIR = results/training/${LOCALHOST}
 SAMPLE_PATH = RUNS/sample_point_1
 NPOINTS = 20
 NVALID = 10
@@ -28,7 +28,7 @@ FIG24 = figure2.pdf figure3.pdf figure4.pdf
 FIGURES = ${FIG24} figure1.pdf
 TUBE_FIG = FabMogpMap.pdf
 
-${PAPER} : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
+$(PAPER) : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
 	bibtex $(subst .tex,.aux,$<)
 	pdflatex $<
