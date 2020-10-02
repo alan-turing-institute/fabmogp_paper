@@ -1,3 +1,4 @@
+PAPER = fabmogp_paper.pdf
 RS_IMAGES = PHILOSOPHICAL_TRANSACTIONS_A_CMYK.pdf\
             RS_Pubs_Logo_Line_CMYK.pdf\
             RSTA_OpenAccesslogo_RGB.pdf\
@@ -27,9 +28,7 @@ FIG24 = figure2.pdf figure3.pdf figure4.pdf
 FIGURES = ${FIG24} figure1.pdf
 TUBE_FIG = FabMogpMap.pdf
 
-.PHONY: test
-
-fabmogp_paper.pdf : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
+${PAPER} : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
 	bibtex $(subst .tex,.aux,$<)
 	pdflatex $<
