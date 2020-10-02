@@ -60,7 +60,7 @@ plt.plot([-1., 11.], [-2., -2.], color="orange", linestyle="--", alpha=0.5)
 plt.plot([-1., 11.], [2., 2.], color="orange", linestyle="--", alpha=0.5)
 plt.yticks([-2., 0., 2.])
 plt.xlabel("Validation point number")
-plt.ylabel("Prediction standard deviations from the mean")
+plt.ylabel("Prediction standard deviations\nfrom the mean")
 plt.tight_layout()
 plt.savefig("figure2.pdf")
 

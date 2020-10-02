@@ -50,7 +50,7 @@ $(FIG_24_FILES) $(FIG_24_VALID) $(MOGP_OUT) $(VALID_OUT): % :
 	rsync -pthrvz ${RESULTS} results/training
 	rm -rf ${RESULTS}
 	rm -rf ${SIMDIR}
-	fabsim localhost mogp_ensemble:demo,sample_points=${NVALID},seed=48273
+	fabsim localhost mogp_ensemble:demo,sample_points=${NVALID},seed=458273
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS} results/validation
 	rm -rf ${RESULTS}
