@@ -56,11 +56,10 @@ plt.figure(figsize=(4,3))
 plt.plot([x for x in range(len(validations.mean))],
          (validations.mean - validation_results)/np.sqrt(validations.unc),
          marker="o", color="blue", linewidth=0.)
-plt.plot([-1., 11.], [-2., -2.], color="orange", linestyle="--", alpha=0.5)
-plt.plot([-1., 11.], [2., 2.], color="orange", linestyle="--", alpha=0.5)
-plt.yticks([-2., 0., 2.])
+plt.plot([-1., 11.], [-3., -3.], color="orange", linestyle="--", alpha=0.5)
+plt.plot([-1., 11.], [3., 3.], color="orange", linestyle="--", alpha=0.5)
 plt.xlabel("Validation point number")
-plt.ylabel("Prediction standard deviations\nfrom the mean")
+plt.ylabel("Prediction standard error")
 plt.tight_layout()
 plt.savefig("figure2.pdf")
 
