@@ -75,16 +75,13 @@ plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles,
               predictions.mean, vmin = 0., vmax = 240., cmap="viridis")
 cb = plt.colorbar()
 cb.set_label("Seismic moment (m km)")
-plt.plot(input_points[:,0], input_points[:,1], marker="o", color="white")
+plt.plot(input_points[:,0], input_points[:,1], marker="o", color="white",
+         linewidth=0.)
 plt.plot(validation_points[valid_include, 0],
-         validation_points[valid_include,1], marker="o", color="red")
+         validation_points[valid_include,1], marker="o", color="red",
+         linewidth=0.)
 plt.xlabel('Normal Stress (MPa)')
 plt.ylabel('Shear to Normal Stress Ratio')
-plt.tight_layout()
-
-cb = plt.colorbar()
-cb.set_label("Fault normal particle velocity (m/s)")
-
 plt.tight_layout()
 
 fig.text(0.005, 0.95, "(a)")
