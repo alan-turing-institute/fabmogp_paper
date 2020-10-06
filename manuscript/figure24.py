@@ -34,7 +34,7 @@ with open("covariance_scale.tex", "w") as outfile:
     outfile.write("{:.3f}".format(np.sqrt(np.exp(gp.theta[3]))))
 
 validations = gp.predict(validation_points)
-    
+
 analysis_points = 10000
 threshold = 3.
 known_value = 58.
@@ -74,7 +74,7 @@ fig.add_subplot(122)
 plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles,
               predictions.mean, vmin = 0., vmax = 250., cmap="viridis")
 cb = plt.colorbar()
-cb.set_label("Seismic moment (m km)")
+cb.set_label("Predicted seismic moment (m km)")
 plt.plot(input_points[:,0], input_points[:,1],
          marker="o", color="white", linewidth=0.)
 plt.plot(validation_points[~valid_include,0],
@@ -88,7 +88,7 @@ plt.ylabel('Shear to Normal Stress Ratio')
 plt.tight_layout()
 
 fig.text(0.005, 0.95, "(a)")
-fig.text(0.505, 0.95, "(b)")
+fig.text(0.465, 0.95, "(b)")
 
 plt.savefig(os.path.join(os.getcwd(), "figure2.pdf"))
 
