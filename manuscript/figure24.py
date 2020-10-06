@@ -77,8 +77,8 @@ cb = plt.colorbar()
 cb.set_label("Seismic moment (m km)")
 plt.plot(input_points[:,0], input_points[:,1],
          marker="o", color="white", linewidth=0.)
-plt.plot(validation_points[-valid_include,0],
-         validation_points[-valid_include,1],
+plt.plot(validation_points[~valid_include,0],
+         validation_points[~valid_include,1],
          marker="o", color="black", linewidth=0.)
 plt.plot(validation_points[valid_include, 0],
          validation_points[valid_include,1],
