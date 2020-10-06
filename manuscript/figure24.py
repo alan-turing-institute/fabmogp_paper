@@ -64,9 +64,9 @@ valid_include = (np.abs(valid_error) > 3.)
 fig = plt.figure(figsize=(6.5,3))
 fig.add_subplot(121)
 plt.plot([x for x in range(len(validations.mean))], valid_error,
-         marker="o", color="blue", linewidth=0.)
-plt.plot([-1., 11.], [-3., -3.], color="orange", linestyle="--", alpha=0.5)
-plt.plot([-1., 11.], [3., 3.], color="orange", linestyle="--", alpha=0.5)
+         marker="o", color="C0", linewidth=0.)
+plt.plot([-1., 11.], [-3., -3.], color="C1", linestyle="--", alpha=0.5)
+plt.plot([-1., 11.], [3., 3.], color="C1", linestyle="--", alpha=0.5)
 plt.xlabel("Validation point number")
 plt.ylabel("Prediction standard error")
 
@@ -82,7 +82,7 @@ plt.plot(validation_points[~valid_include,0],
          marker="o", color="black", linewidth=0.)
 plt.plot(validation_points[valid_include, 0],
          validation_points[valid_include,1],
-         marker="o", color="red", linewidth=0.)
+         marker="o", color="C3", linewidth=0.)
 plt.xlabel('Normal Stress (MPa)')
 plt.ylabel('Shear to Normal Stress Ratio')
 plt.tight_layout()
