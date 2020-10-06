@@ -101,7 +101,6 @@ WORKDIR ${base_dir}
 RUN mkdir -p ${paper_dir} && \
     git clone ${paper_repo} ${paper_dir} && \
     cd ${paper_dir} && \
-    git checkout --force validation
 
 # set up outputs
 WORKDIR ${base_dir}
