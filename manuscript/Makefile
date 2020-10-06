@@ -42,7 +42,7 @@ $(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
 	python $<
 
-$(FIG_24_FILES) $(FIG_24_VALID) $(MOGP_OUT) $(VALID_OUT): % :
+$(FIG_24_FILES) $(MOGP_OUT) : % :
 	rm -rf ${RESULTS}
 	rm -rf ${SIMDIR}
 	fabsim localhost mogp_ensemble:demo,sample_points=${NPOINTS},seed=4742322
@@ -50,7 +50,11 @@ $(FIG_24_FILES) $(FIG_24_VALID) $(MOGP_OUT) $(VALID_OUT): % :
 	rsync -pthrvz ${RESULTS} results/training
 	rm -rf ${RESULTS}
 	rm -rf ${SIMDIR}
-	fabsim localhost mogp_ensemble:demo,sample_points=${NVALID},seed=458273
+
+$(FIG_24_VALID) $(VALID_OUT): % :
+	rm -rf ${RESULTS}
+	rm -rf ${SIMDIR}
+	fabsim localhost mogp_ensemble:demo,sample_points=${NVALID},seed=63684
 	fabsim localhost fetch_results
 	rsync -pthrvz ${RESULTS} results/validation
 	rm -rf ${RESULTS}
