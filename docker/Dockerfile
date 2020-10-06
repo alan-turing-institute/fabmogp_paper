@@ -99,8 +99,7 @@ RUN echo 'export OUTPUT='${base_dir}'/'${output_dir} >> /root/.bashrc
 # clone paper repo
 WORKDIR ${base_dir}
 RUN mkdir -p ${paper_dir} && \
-    git clone ${paper_repo} ${paper_dir} && \
-    cd ${paper_dir} && \
+    git clone ${paper_repo} ${paper_dir}
 
 # set up outputs
 WORKDIR ${base_dir}
