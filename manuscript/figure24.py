@@ -50,18 +50,47 @@ hm = HistoryMatching(obs=known_value, expectations=predictions,
 implaus = hm.get_implausibility()
 NROY = hm.get_NROY()
 
+# set up triangulation for plotting simulator output and implausibility
+
+import matplotlib.tri
+
+tri = matplotlib.tri.Triangulation(-(query_points[:,0]-80.)/40., (query_points[:,1]-0.1)/0.3)
+
 # make some plots
 
-plt.figure(figsize=(4,3))
-plt.plot([x for x in range(len(validations.mean))],
-         (validations.mean - validation_results)/np.sqrt(validations.unc),
+valid_error = (validations.mean - validation_results)/np.sqrt(validations.unc)
+valid_include = (np.abs(valid_error) > 3.)
+
+fig = plt.figure(figsize=(6.5,3))
+fig.add_subplot(121)
+plt.plot([x for x in range(len(validations.mean))], valid_error,
          marker="o", color="blue", linewidth=0.)
 plt.plot([-1., 11.], [-3., -3.], color="orange", linestyle="--", alpha=0.5)
 plt.plot([-1., 11.], [3., 3.], color="orange", linestyle="--", alpha=0.5)
 plt.xlabel("Validation point number")
 plt.ylabel("Prediction standard error")
+
+fig.add_subplot(122)
+plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles,
+              predictions.mean, vmin = 0., vmax = 240., cmap="viridis")
+cb = plt.colorbar()
+cb.set_label("Seismic moment (m km)")
+plt.plot(input_points[:,0], input_points[:,1], marker="o", color="white")
+plt.plot(validation_points[valid_include, 0],
+         validation_points[valid_include,1], marker="o", color="red")
+plt.xlabel('Normal Stress (MPa)')
+plt.ylabel('Shear to Normal Stress Ratio')
 plt.tight_layout()
-plt.savefig("figure2.pdf")
+
+cb = plt.colorbar()
+cb.set_label("Fault normal particle velocity (m/s)")
+
+plt.tight_layout()
+
+fig.text(0.005, 0.95, "(a)")
+fig.text(0.505, 0.95, "(b)")
+
+plt.savefig(os.path.join(os.getcwd(), "figure2.pdf"))
 
 plt.figure(figsize=(4,3))
 plt.plot(query_points[NROY, 0], query_points[NROY, 1], 'o')
@@ -70,12 +99,9 @@ plt.ylabel('Shear to Normal Stress Ratio')
 plt.xlim((-120., -80.))
 plt.ylim((0.1, 0.4))
 plt.tight_layout()
-plt.savefig("figure3.pdf")
-
-import matplotlib.tri
+plt.savefig(os.path.join(os.getcwd(), "figure3.pdf"))
 
 plt.figure(figsize=(4,3))
-tri = matplotlib.tri.Triangulation(-(query_points[:,0]-80.)/40., (query_points[:,1]-0.1)/0.3)
 plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles, implaus,
               vmin = 0., vmax = 6., cmap="viridis_r")
 cb = plt.colorbar()
@@ -83,4 +109,4 @@ cb.set_label("Implausibility")
 plt.xlabel('Normal Stress (MPa)')
 plt.ylabel('Shear to Normal Stress Ratio')
 plt.tight_layout()
-plt.savefig("figure4.pdf")
+plt.savefig(os.path.join(os.getcwd(), "figure4.pdf"))
