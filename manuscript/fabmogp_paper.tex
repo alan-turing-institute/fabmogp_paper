@@ -281,6 +281,30 @@ As noted above, there are three types of uncertainty that we need to account for
 
 In practice, (i) and (ii) are straightforward to determine, while (iii) is much trickier \cite{modeldiscrep}. However, studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
 
+An alternative approach to History Matching for model calibration is to
+perform a full Bayesian model calibration \cite{calibration},
+which aims to compute the posterior
+distribution of the simulator inputs conditioned on the observational data
+and the points at which the simulator was evaluated.
+As with History Matching, this approach uses a fast surrogate model to
+approximate the simulator and accounts for all errors including observational
+error and model discrepancy. It has the advantage of generating a probability
+distribution (or samples drawn from one in most practical cases) for the
+parameter values, while History Matching is only able to determine if
+points can be ruled out or not.
+However, full Bayesian calibration requires that
+the emulator has a low uncertainty over the entire input space to prevent
+emulator uncertainty from dominating the calibration
+results. This condition is frequently not met given the high dimensional
+parameter space and computational costs of running many simulations in
+most practical applications.
+History matching can still produce useful output with a perfect
+emulator, as it simply will be unable to rule out points in regions of
+space where the emulator uncertainty is too large, while still giving
+useful information in othe parts of parameter space. Thus, because of
+its robustness to emulator uncertainties, we focus on History Matching
+in this example.
+
 \subsection{Implementation with mogp\_emulator}
 
 The above components are implemented in the \texttt{mogp\_emulator} software library, which is
