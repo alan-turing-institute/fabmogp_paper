@@ -446,7 +446,12 @@ Fourier space with random phase and taking the real part of the FFT and removing
 The RMS deviation from planarity is fixed to be smaller than the fault length by a factor of $10^{-2}$,
 which is typical
 for natural faults \cite{dunhametal}. Roughness is cut off at wavelengths shorter than 20 times the
-grid spacing.
+grid spacing. We have run the analysis on several realisation of the rough
+fault profile and find that the general conclusions are not sensitive
+to the exact choice of fault geometry. Changing the profile does influence
+the exact values of the simulator output, but the results of the UQ analysis
+are largely the same in that History Matching procedure is able to rule out
+much of the parameter space.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
 While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations:

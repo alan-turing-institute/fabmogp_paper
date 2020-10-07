@@ -73,7 +73,15 @@ This is a nice and well-written paper about uncertainty quantification and calib
   perform UQ with simulations that produce many outputs. These changes are
   in the GP section and History Matching section.
 
-5. Section 3(b): it is mentioned that the fault profile is created with random phases. How sensitive are the results to the details of the fault profile? Did the authors try out profiles with different phases?
+\item Section 3(b): it is mentioned that the fault profile is created with random phases. How sensitive are the results to the details of the fault profile? Did the authors try out profiles with different phases?
+
+  \textbf{Response:} Yes, we have run our analysis with multiple realisations
+  of the fault profile and find that the conclusions drawn here are not
+  sensitive to the particular choice of profile. We find that the exact
+  values of the simulator output are sensitive to the choice of profile,
+  but the calibration approach still is able to reduce the NROY space to
+  a small fraction of the original input space. We have clarified this
+  when describing the earthquake simulation.
 
 6. There is no discussion or consideration of the quality of the fit of the GP surrogate model. This issue should really be addressed in the paper. Can the authors show any validation results, e.g. using cross-validation? Does the mogp\_emulator library have capabilities for such a validation, and can it be made part of the computational workflow with the tools used in this paper?
 
