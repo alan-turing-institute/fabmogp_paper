@@ -55,13 +55,23 @@ This is a nice and well-written paper about uncertainty quantification and calib
   additional text to the section on History Matching to describe this
   alternate approach.
 
-\item Is there a literature reference for the mogp\_emulator library? I see where the software can be downloaded from Github, but is there also e.g. a journal or conference paper about it?
+\item Is there a literature reference for the \texttt{mogp\_emulator} library? I see where the software can be downloaded from Github, but is there also e.g. a journal or conference paper about it?
 
-  \textbf{Response:} We have not published any previous papers on the library
+  \textbf{Response:} We have not published any previous papers using the library
   at the moment. We intend to submit the library to the Journal of Open Source
   Software, but have not completed the submission at this time.
 
-4. The mogp\_emulator is for "Multi Output" GPs, but am I correct that in this paper only single (i.e., scalar) outputs are considered? The summary on section 2(b) also seems to focus on GPs for scalar output.
+\item The \texttt{mogp\_emulator} is for "Multi Output" GPs, but am I correct that in this paper only single (i.e., scalar) outputs are considered? The summary on section 2(b) also seems to focus on GPs for scalar output.
+
+  \textbf{Response:} The reviewer is correct that our library can also handle
+  multiple outputs. Our demo only used a single output for simplicity, but
+  most computer simulations produce multiple
+  outputs and are usually compared with multiple types of observations.
+  However, the overall workflow is unchanged so we felt multiple outputs was an
+  unneeded complication for the purposes of the tutorial.
+  However, we agree that it is worth highlighting the changes required to
+  perform UQ with simulations that produce many outputs. These changes are
+  in the GP section and History Matching section.
 
 5. Section 3(b): it is mentioned that the fault profile is created with random phases. How sensitive are the results to the details of the fault profile? Did the authors try out profiles with different phases?
 

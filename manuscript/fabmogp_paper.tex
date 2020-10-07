@@ -257,6 +257,24 @@ adaptively by factorising the matrix with increasing noise levels until the algo
 In this example, we use the adaptive approach as we find it tends to be the most robust way to fit an
 emulator with a small nugget.
 
+In this example, we focus on a computer simulation with a single output for
+the sake of simplifying the presentation. However, real UQ problems typically
+involve multiple observations and simulation codes that produce multiple
+outputs as well. These could include multiple observable fields, as well as
+spatially- or time-varying fields. In this case, the overall UQ procedure
+is the same, but multiple surrogate models must be fit that predict all of
+the output quantities of interest. The simplest way to handle multiple
+outputs is to fit an independent emulator to each quantity of interest
+(which can be done in parallel using \texttt{mogp\_emulator}). However,
+this approach will fail to capture the correlation structure present in
+the outputs. One way to mitigate this problem is to perform a dimension
+reduction on the outputs and emulate the reduced set of outputs
+\cite{dimreduction} which simultaneously reduces the computational cost
+of fitting and ensures that samples drawn from the emulators more closely
+resemble the simulation output. However, the overall procedure for fitting
+the emulators remains identical regardless of the total number of outputs
+or the method of emulating these outputs.
+
 \subsection{History Matching}
 
 Once we have predictions for a large number of query points, it is straightforward to compare with observations.
@@ -304,6 +322,16 @@ space where the emulator uncertainty is too large, while still giving
 useful information in othe parts of parameter space. Thus, because of
 its robustness to emulator uncertainties, we focus on History Matching
 in this example.
+
+In situations where the simulation has multiple outputs, History Matching
+requires a method for combining the implausibility measure for multiple
+outputs into a single implausibility metric for the given simulator input.
+This is usually done by taking the second or third highest individual
+implausibility metric value to avoid a situation where poor performance of
+the emulator for a particular output causes a point that is otherwise a
+good fit to the data from being ruled out \cite{vernon2014}. Otherwise,
+the History Matching procedure is the same regardless of the number of
+simulation outputs.
 
 \subsection{Implementation with mogp\_emulator}
 
