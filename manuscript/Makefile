@@ -29,7 +29,7 @@ FIGURES = ${FIG24} figure1.pdf
 TUBE_FIG = FabMogpMap.pdf
 CATALOGUE_INPUTS = --code . --input_data input_data
 CATALOGUE_OUTPUTS = --output_data results
-CATALOGUE_JSON = catalogue_results/20201008-193326.json
+CATALOGUE_JSON = catalogue_results/20201008-211554.json
 
 $(PAPER) : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
@@ -85,4 +85,4 @@ clean:
 .PHONY: cleanall
 cleanall: clean
 	rm -f ${FIG_1_FILES_U} ${FIG_1_FILES_VY} ${FIG_24_FILES} ${FIG_24_VALID}
-	rm -f ${MOGP_OUT} ${VALID_OUT}
+	rm -f ${MOGP_OUT} ${VALID_OUT} results/*.npy
