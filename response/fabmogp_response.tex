@@ -5,7 +5,7 @@
 
 \title{Response to Reviewers for Submission RSTA-2020-0076 ``Uncertainty Quantification of Dynamic Earthquake Rupture Simulations''}
 
-\author{Eric G. Daub, Hamid Arabnijad, Imran Mahmood, Derek Groen}
+\author{Eric G. Daub, Hamid Arabnejad, Imran Mahmood, Derek Groen}
 
 \begin{document}
 
@@ -33,18 +33,86 @@ The only minor changes that I request are:
 
 This is a nice and well-written paper about uncertainty quantification and calibration for an earthquake computational model. I can recommend it for publication provided the following points are addressed in the paper.
 
-1. The authors give a bit of a mixed message about what the main aim of the paper is. Do they view it primarily as a tutorial/demonstration paper, or as a research paper containing new research results? This should be made clear in the introduction section.
+\begin{enumerate}
 
-2. In the paper history matching is used as an approach to calibration. Can the authors indicate how history matching relates to Bayesian model calibration?
+\item The authors give a bit of a mixed message about what the main aim of the paper is. Do they view it primarily as a tutorial/demonstration paper, or as a research paper containing new research results? This should be made clear in the introduction section.
 
-3. Is there a literature reference for the mogp\_emulator library? I see where the software can be downloaded from Github, but is there also e.g. a journal or conference paper about it?
 
-4. The mogp\_emulator is for "Multi Output" GPs, but am I correct that in this paper only single (i.e., scalar) outputs are considered? The summary on section 2(b) also seems to focus on GPs for scalar output.
+  \textbf{Response:} We see this paper as primarily a tutorial/demonstration,
+  as we have made efforts to simplify the problem and the approach to
+  improve accessibility to non-specialists in earthquake science and
+  Uncertainty Quantitifcation. However, to our knowledge this UQ approach
+  has not previously been applied to dynamic earthquake modelling so we
+  do wish to highlight this novel aspect of this work. We have added a few
+  sentences towards the end of the
+  introduction to make this aspect of the work more clear.
 
-5. Section 3(b): it is mentioned that the fault profile is created with random phases. How sensitive are the results to the details of the fault profile? Did the authors try out profiles with different phases?
+\item In the paper history matching is used as an approach to calibration. Can the authors indicate how history matching relates to Bayesian model calibration?
 
-6. There is no discussion or consideration of the quality of the fit of the GP surrogate model. This issue should really be addressed in the paper. Can the authors show any validation results, e.g. using cross-validation? Does the mogp\_emulator library have capabilities for such a validation, and can it be made part of the computational workflow with the tools used in this paper?
+  \textbf{Response:} The two approaches are related, and we agree that a
+  description of Bayesian model calibration would be a useful addition to
+  the manuscript as another approach to calibration. We have added some
+  additional text to the section on History Matching to describe this
+  alternate approach.
 
-7. Can the authors comment on how their approach and workflow will scale to larger problems? In the paper, three input parameters and a single simulator output variable are used, as well as 20 sample points for fitting the GP surrogate model. How easy will it be to tackle problems with more inputs, multiple outputs, or more sample points? What will be the main bottleneck for scaling up?
+\item Is there a literature reference for the \texttt{mogp\_emulator} library? I see where the software can be downloaded from Github, but is there also e.g. a journal or conference paper about it?
+
+  \textbf{Response:} We have not published any previous papers using the library
+  at the moment. We intend to submit the library to the Journal of Open Source
+  Software, but have not completed the submission at this time.
+
+\item The \texttt{mogp\_emulator} is for "Multi Output" GPs, but am I correct that in this paper only single (i.e., scalar) outputs are considered? The summary on section 2(b) also seems to focus on GPs for scalar output.
+
+  \textbf{Response:} The reviewer is correct that our library can also handle
+  multiple outputs. Our demo only used a single output for simplicity, but
+  most computer simulations produce multiple
+  outputs and are usually compared with multiple types of observations.
+  However, the overall workflow is unchanged so we felt multiple outputs was an
+  unneeded complication for the purposes of the tutorial.
+  However, we agree that it is worth highlighting the changes required to
+  perform UQ with simulations that produce many outputs. These changes are
+  in the GP section and History Matching section.
+
+\item Section 3(b): it is mentioned that the fault profile is created with random phases. How sensitive are the results to the details of the fault profile? Did the authors try out profiles with different phases?
+
+  \textbf{Response:} Yes, we have run our analysis with multiple realisations
+  of the fault profile and find that the conclusions drawn here are not
+  sensitive to the particular choice of profile. We find that the exact
+  values of the simulator output are sensitive to the choice of profile,
+  but the calibration approach still is able to reduce the NROY space to
+  a small fraction of the original input space. We have clarified this
+  when describing the earthquake simulation.
+
+\item There is no discussion or consideration of the quality of the fit of the GP surrogate model. This issue should really be addressed in the paper. Can the authors show any validation results, e.g. using cross-validation? Does the \texttt{mogp\_emulator} library have capabilities for such a validation, and can it be made part of the computational workflow with the tools used in this paper?
+
+  \textbf{Response:} Model validation is straightforward using the existing
+  tools in the library. In practice, it is best to draw a separate LHC set
+  of design points to validate the emulator (rather than reserving part
+  of the training data as is commonly done in other situations) to ensure
+  that both the training and validation sets are drawn more uniformly from
+  the input space. Thus, creating a validation set is a matter of re-running
+  the entire workflow again with the desired number of validation points
+  and then comparing the emulator outputs with the predicted values.
+
+  We have amended the manuscript to include GP validation. We add a separate
+  section on this, a table to show the validation points, and a figure to
+  illustrate. In particular,
+  we find that there are a few validation failures of the GP surrogate.
+  This is due to a number of reasons, which we discuss in the manuscript.
+  We feel this is a good way to illustrate some of the challenges of
+  emulating complex computer codes, and we thank the reviewer for this
+  suggestion as we feel this has substantially improved the depth of
+  the discussion in the manuscript.
+
+\item Can the authors comment on how their approach and workflow will scale to larger problems? In the paper, three input parameters and a single simulator output variable are used, as well as 20 sample points for fitting the GP surrogate model. How easy will it be to tackle problems with more inputs, multiple outputs, or more sample points? What will be the main bottleneck for scaling up?
+
+  \textbf{Response:} This is a good question. The challenges and
+  bottlenecks depend on the exact problem under consideration when considering
+  more realistic problems. We have added a paragraph to the conclusion
+  that addresses some of what we feel are the relevant issues, which
+  we feel helps expand the reach of this paper given that it is meant
+  to be an introductory tutorial/demonstration.
+  
+\end{enumerate}
 
 \end{document}

@@ -146,7 +146,18 @@ The FabSim3 plugin was used in a tutorial and we provided a pre-packaged computa
 to allow users to re-create the workflows here during a 90 minute session. We found that most
 users were able to complete the exercises within the session and reproduce our results,
 illustrating the effectiveness of our approach for capturing a full complex UQ workflow
-in a reliable and reproducible manner.
+in a reliable and reproducible manner. Based on this experience,
+we view this work as a tutorial demonstration that highlights
+some of the computational issues involved with UQ, and have simplified the
+simulation complexity and cost, as well as some details of the calibration
+workflow, in order to make this more accessible to a wider audience.
+We have also noted several places where we have made some simplifications
+and a more careful consideration would be
+warranted when applying this workflow in a research setting.
+We feel this work highlights ways that existing
+software libraries can help address these problems, while simultaneously
+highlighting some of the challenges by applying it to a real problem
+in earthquake science.
 
 \section{Uncertainty Quantification Approach}
 
@@ -246,6 +257,24 @@ adaptively by factorising the matrix with increasing noise levels until the algo
 In this example, we use the adaptive approach as we find it tends to be the most robust way to fit an
 emulator with a small nugget.
 
+In this example, we focus on a computer simulation with a single output for
+the sake of simplifying the presentation. However, real UQ problems typically
+involve multiple observations and simulation codes that produce multiple
+outputs as well. These could include multiple observable fields, as well as
+spatially- or time-varying fields. In this case, the overall UQ procedure
+is the same, but multiple surrogate models must be fit that predict all of
+the output quantities of interest. The simplest way to handle multiple
+outputs is to fit an independent emulator to each quantity of interest
+(which can be done in parallel using \texttt{mogp\_emulator}). However,
+this approach will fail to capture the correlation structure present in
+the outputs. One way to mitigate this problem is to perform a dimension
+reduction on the outputs and emulate the reduced set of outputs
+\cite{dimreduction} which simultaneously reduces the computational cost
+of fitting and ensures that samples drawn from the emulators more closely
+resemble the simulation output. However, the overall procedure for fitting
+the emulators remains identical regardless of the total number of outputs
+or the method of emulating these outputs.
+
 \subsection{History Matching}
 
 Once we have predictions for a large number of query points, it is straightforward to compare with observations.
@@ -269,6 +298,40 @@ As noted above, there are three types of uncertainty that we need to account for
 \end{enumerate}
 
 In practice, (i) and (ii) are straightforward to determine, while (iii) is much trickier \cite{modeldiscrep}. However, studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
+
+An alternative approach to History Matching for model calibration is to
+perform a full Bayesian model calibration \cite{calibration},
+which aims to compute the posterior
+distribution of the simulator inputs conditioned on the observational data
+and the points at which the simulator was evaluated.
+As with History Matching, this approach uses a fast surrogate model to
+approximate the simulator and accounts for all errors including observational
+error and model discrepancy. It has the advantage of generating a probability
+distribution (or samples drawn from one in most practical cases) for the
+parameter values, while History Matching is only able to determine if
+points can be ruled out or not.
+However, full Bayesian calibration requires that
+the emulator has a low uncertainty over the entire input space to prevent
+emulator uncertainty from dominating the calibration
+results. This condition is frequently not met given the high dimensional
+parameter space and computational costs of running many simulations in
+most practical applications.
+History matching can still produce useful output with a perfect
+emulator, as it simply will be unable to rule out points in regions of
+space where the emulator uncertainty is too large, while still giving
+useful information in othe parts of parameter space. Thus, because of
+its robustness to emulator uncertainties, we focus on History Matching
+in this example.
+
+In situations where the simulation has multiple outputs, History Matching
+requires a method for combining the implausibility measure for multiple
+outputs into a single implausibility metric for the given simulator input.
+This is usually done by taking the second or third highest individual
+implausibility metric value to avoid a situation where poor performance of
+the emulator for a particular output causes a point that is otherwise a
+good fit to the data from being ruled out \cite{vernon2014}. Otherwise,
+the History Matching procedure is the same regardless of the number of
+simulation outputs.
 
 \subsection{Implementation with mogp\_emulator}
 
@@ -383,7 +446,12 @@ Fourier space with random phase and taking the real part of the FFT and removing
 The RMS deviation from planarity is fixed to be smaller than the fault length by a factor of $10^{-2}$,
 which is typical
 for natural faults \cite{dunhametal}. Roughness is cut off at wavelengths shorter than 20 times the
-grid spacing.
+grid spacing. We have run the analysis on several realisation of the rough
+fault profile and find that the general conclusions are not sensitive
+to the exact choice of fault geometry. Changing the profile does influence
+the exact values of the simulator output, but the results of the UQ analysis
+are largely the same in that History Matching procedure is able to rule out
+much of the parameter space.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
 While we do not know the exact values of the stresses on earthquake faults, we do know a few general things that we should incorporate into our simulations:
@@ -511,6 +579,116 @@ output noted in Table~\ref{table_lhc}, and the correlation lengths are of a simi
 input values, suggesting that our emulator does a reasonable job of capturing the information in
 the simulation outputs.
 
+\subsection{Validation}
+
+We validate the surrogate model by drawing a separate Latin Hypercube sample
+with 10 design points (Table~\ref{table_valid}).
+We note that while in many other statistical
+techniques it is common to withhold a subset of the training data for
+validation purposes, the space-filling nature of the Latin Hypercube suggest
+it is best to draw two separate samples to ensure that both the training
+and validation data aim to cover the input space as uniformly as possible.
+Once we have run the additional simulations, we validate the emulator by
+computing the predicted means and variances and comparing with the
+actual simulated values by computing the standard error (difference
+between the predited mean and the actual value normalised by the prediction
+standard deviation). For a valid emulator, we expect most of the standard
+error values to lie within $\pm 3$ standard devations from the mean.
+Other metrics can be used to validate emulators \cite{validation} that
+produce a single validationmetric for the entire validation set rather than an
+individual metric for each validation point.
+
+\begin{table}[!h]
+\caption{Latin Hypercube experimental design samples used for validating the surrogate model and the
+corresponding integrated slip}
+\label{table_valid}
+\begin{tabular}{ccccc}%%%The number of columns has to be defined here
+\hline
+Normal Stress & Shear/Normal Stress & Normal Stress Ratio & Simulator Output \\
+\hline
+\input{validation_points}
+\\\hline
+\end{tabular}
+\vspace*{-4pt}
+\end{table}%%%End of the table
+
+The values of the standard error for the 10 validation points are illustrated
+in Fig.~\ref{fig_valid}(a). We find that 8 of the 10 validation points lie
+within the 3 standard deviation window, while the remaining 2 points are
+outside of this range and indicate that the emulator is not perfectly
+reproducing the underlying function. There are several potential causes
+for these types of failures, which can be illustrated by looking at the
+spatial distribution of the training and validation points in
+Fig.~\ref{fig_valid}(b). Figure~\ref{fig_valid}(b) shows the input space
+projected into the normal stress-shear to normal stress plane, which
+are the two inputs to which the simulator output is most sensitive.
+The background color scale is the emulator predictions for a much larger set
+of 10,000 sample points. The simulation is most sensitive to the shear to
+normal stress ratio, with low values indicating rupture arrest and high
+values indicating rupture propagation. The white points are the 20 training
+points, the black points are the 8 validation points where the emulator
+predictions are valid, and the two red points are the validation failures.
+
+\begin{figure}[!h]
+\centering\includegraphics[width=4in]{figure2.pdf}
+\caption{(a) Emulator validation results for the 10 validation points
+  drawn using a Latin Hypercube experimental design. We find that the
+  emulator provides valid predictions for 8/10 validation points.
+  (b) Spatial distribution of the training and validation points, projected
+  into the normal stress and shear to normal stress ratio plane (the
+  simulator output is not highly sensitive to the additional normal
+  stress ratio).
+  The background color scale is the predicted emulator mean and shows the
+  approximate behaviour of the underlying simulator. The output is
+  most strongly dependent on the shear to normal stress ratio. White
+  points are the training samples, black points are validation points
+  where the emulator performance is valid, and red points are the two
+  points where a validation failure occurs. We note that the failure
+  points are near the transitions between regions where the dependence
+  of the output to the underlying input is strongly varying. This suggests
+  that the underlying function is non-stationary, and the resulting
+  emulator is overconfident in the predictions. However, we find that despite
+  these validation failures the emulator is still providing enough useful
+  information to proceed with the analysis due to its accuracy over
+  the majority of the input space.}
+\label{fig_nroy}
+\end{figure}
+
+For this problem, the emulator validation failures occur because
+in some portions of parameter space the simulator output
+is very sensitive to the inputs, while simultaneously there are other
+parts of the parameter space where the output is not very sensitive to
+the inputs. Our emulator uses a squared exponential covariance kernel, which
+is an example of a stationary covariance kernel in that it assumes a uniform
+correlation length should apply throughout the entire parameter space.
+For many nonlinear simulators, this assumption does not hold, and the resulting
+emulator will have some regions of the input space where it does not
+provide good predictions. In this case, the emulator is overconfident in
+the regions where the validation failures have occurred, but results in good
+performance for most of the input space.
+
+To correct this validation failure,
+we would first consider building an emulator with
+a more informative mean function, as in many cases a mean function that
+better captures prior information about the shape of the output
+will alleviate problems of a non-stationary
+underlying simulator. Prior distributions on the hyperparameters can also
+provide additional constraints if the experimental design does not sample
+the input space well enough to constrain the hyperparameter values. Drawing
+additional input samples can also help if there are a few problem areas
+where the emulator performs poorly and can be improved by constraining
+the value of the underlying simulator. We have experimented with training
+sets with 50 points and find that the emulator performs better in the
+sense that prediction uncertainties decreased. However, validating the
+emulator shows
+there are still regions where the predictions are overconfident due to
+non-stationarity of the underlying function, suggesting that an approach
+using a mean function is required to overcome this problem. However, we
+feel that a careful exploration of this issue is beyond the scope of this
+work, and thus we
+proceed with the original emulator as fit in the tutorial to perform
+History Matching.
+
 \subsection{History Matching}
 
 With the fit GP emulator, we can now make predictions using a dense sampling of points drawn from the
@@ -569,6 +747,41 @@ Our results also illustrate how the \texttt{mogp\_emulator} package allows imple
 robust model calibration approaches on problems that have not previously considered such
 an approach. The library allows flexible specification of all components of the calibration
 workflow and is easily adaptable to other physical systems.
+
+There are numerous challenges in applying these methods to more complex
+research problems, some of which we have highlighted in this paper. In
+particular, the computational effort required to carry out the training
+and validation simulations will typically be much larger and require a high
+performance computing cluster. One advantage of our approach is that if
+the workflows have been appropriately defined using FabSim3 for simulation
+management, the same scripts can be used to run the ensemble on the
+cluster that were used here, only requiring a larger computational
+expense. The exact number of simulator samples that should be run will
+depend on the computational expense and resources available, but will
+also depend on the number of input parameters in the problem due to the
+well-known ``curse of dimensionality'' in that the size of the input
+space grows exponentially with the number of parameters. Thus, more
+realistic problems may require a larger number of simulator runs to
+obtain emulators with sufficiently good performance.
+
+Once the sample points are drawn from the simulator, more realistic problems
+will require more computational effort to fit the surrogate emulators to
+the data. This can be due to multiple outputs and observations, which
+require multiple emulators be fit to the simulator outputs and thus
+increase the computational cost. However, dimension reduction techniques
+\cite{dimreduction} for handling multiple outputs can reduce the cost
+of fitting the emulator by only fitting a few principal components to ensure
+that the emulators capture the correlation structure in the simulators.
+Additionally, more input parameters can increase the fitting costs due to
+the additional correlation lengths that must be estimated, as minimisation
+algorithms tend to be slower to converge for high-dimensional outputs.
+Once the emulators are fit, prediction costs will also scale with the
+number of emulators, and high dimensional input spaces will also require more
+query points to sample the input space at a high enough density to
+be able to rule out parts of the space.
+These factors will tend to increase the cost of fitting the surrogate models
+relative to this example, though in general for most applications the cost
+of running the simulator remains the largest computational expense.
 
 The UQ results demonstrate that given the seismic moment of an event, we can rule out
 much of the input stress parameter space, as the earthquake size is highly sensitive to
