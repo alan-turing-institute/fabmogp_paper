@@ -73,7 +73,7 @@ disengage:
 
 .PHONY: compare
 compare:
-	catalogue compare 20201008-193326.json
+	catalogue compare 20201008-193326.json --code . --input_data input_data --output_data results
 
 .PHONY: clean
 clean:
