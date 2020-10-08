@@ -33,6 +33,8 @@ with open("correlation_lengths.tex", "w") as outfile:
 with open("covariance_scale.tex", "w") as outfile:
     outfile.write("{:.3f}".format(np.sqrt(np.exp(gp.theta[3]))))
 
+np.save("results/hyperparameters.npy", gp.theta)
+
 validations = gp.predict(validation_points)
 
 analysis_points = 10000
@@ -42,6 +44,8 @@ known_value = 58.
 query_points = ed.sample(analysis_points)
 predictions = gp.predict(query_points)
 
+np.save("results/query_points.npy", query_points)
+
 # set up history matching
 
 hm = HistoryMatching(obs=known_value, expectations=predictions,
@@ -49,6 +53,9 @@ hm = HistoryMatching(obs=known_value, expectations=predictions,
 
 implaus = hm.get_implausibility()
 NROY = hm.get_NROY()
+
+np.save("results/implausibility.npy", implaus)
+np.save("results/NROY.npy", np.array(NROY, dtype=np.int64))
 
 # set up triangulation for plotting simulator output and implausibility
 
@@ -60,6 +67,8 @@ tri = matplotlib.tri.Triangulation(-(query_points[:,0]-80.)/40., (query_points[:
 
 valid_error = (validations.mean - validation_results)/np.sqrt(validations.unc)
 valid_include = (np.abs(valid_error) > 3.)
+
+np.save("results/valid_error.npy", valid_error)
 
 fig = plt.figure(figsize=(6.5,3))
 fig.add_subplot(121)
