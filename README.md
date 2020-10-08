@@ -19,8 +19,16 @@ All dependencies required to reproduce this paper are included in the provided D
 corresponding Makefile includes all build instructions.
 You will need to install Docker and Make to build the docker image
 to run the simulations and create the PDF of the manuscript.
+The results of the computations that were submitted for publication have
+also been hashed, and a tool is pre-installed in the docker image that
+allows the user to easily compare the results of re-running the computations
+with those that were previously obtained.
 
-## Build Instructions
+NOTE: I have only tested this on MacOS, though I believe it should also work on Linux with no changes.
+If you are running Windows, you may need to alter some of the pre-packaged commands in the
+Makefile to work on your system.
+
+## Building the Docker Image
 
 From the `docker` directory, you should be able to build the docker container with the command
 
@@ -30,7 +38,11 @@ make fabmogp_build
 
 You will need to have Make and Docker installed, and Docker must be running. This will build
 the image of the computational environment needed to produce the simulations (you will need an
-internet connection to download all of the packages). Once the build completes, you can
+internet connection to download all of the packages).
+
+## Running the Simulations and Typesetting the Manuscript
+
+Once the build completes, you can
 start the container by running the command
 
 ```bash
@@ -60,6 +72,17 @@ cp fabmogp_paper.pdf $OUTPUT
 
 This will cause the paper to show up in the `docker/output` directory on your machine.
 
-NOTE: I have only tested this on MacOS, though I believe it should also work on Linux.
-If you are running Windows, you may need to alter some of the pre-packaged commands in the
-Makefile to work on your system.
+## Comparing with the Hashed Results
+
+Once all the simulations have been run, you can easily compare your results with
+those obtained when the paper was submitted. This uses the `repro-catalogue`
+tool, which hashes all of the outputs from the simulations so that they can
+be compared later. To do this, from the
+same prompt in the container, type `make compare`. The hashing tool will
+print out the files that match and those that do not match -- note that
+there will be 65 instances where the files do not match (mainly because
+the FabSim3
+tool saves log files and YAML files containing environment variables
+from the simulation runs, both of which include timestamps and thus will
+not match across repeated simulations). However, there should be 525
+files that match if the simulations were successfully reproduced.
