@@ -31,8 +31,8 @@ RUN cd /usr/local/bin && \
     ln -s /usr/bin/python3 python && \
     pip3 install --upgrade pip && \
     pip install -U pip setuptools && \
-    pip install pyyaml matplotlib numpy scipy pytest fabric3 cryptography
-    #cryptography==2.4.2
+    pip install pyyaml matplotlib numpy scipy pytest fabric3 cryptography && \
+    pip install repro-catalogue
 
 # clone mogp_emulator github repository
 WORKDIR ${base_dir}
