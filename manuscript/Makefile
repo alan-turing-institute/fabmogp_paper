@@ -27,6 +27,9 @@ SIM_TEXT = lhc_values.tex validation_points.tex\
 FIG24 = figure2.pdf figure3.pdf figure4.pdf
 FIGURES = ${FIG24} figure1.pdf
 TUBE_FIG = FabMogpMap.pdf
+CATALOGUE_INPUTS = --code . --input_data input_data
+CATALOGUE_OUTPUTS = --output_data results
+CATALOGUE_JSON = catalogue_results/20201008-193326.json
 
 $(PAPER) : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
@@ -65,15 +68,15 @@ $(FIG24) $(SIM_TEXT) : % : figure24.py ${FIG_24_FILES} ${FIG_24_VALID} ${MOGP_OU
 
 .PHONY: engage
 engage:
-	catalogue engage --code . --input_data input_data
+	catalogue engage ${CATALOGUE_INPUTS}
 
 .PHONY: disengage
 disengage:
-	catalogue disengage --code . --input_data input_data --output_data results
+	catalogue disengage ${CATALOGUE_INPUTS} ${CATALOGUE_OUTPUTS}
 
 .PHONY: compare
 compare:
-	catalogue compare 20201008-193326.json --code . --input_data input_data --output_data results
+	catalogue compare ${CATALOGUE_JSON} ${CATALOGUE_INPUTS} ${CATALOGUE_OUTPUTS}
 
 .PHONY: clean
 clean:
