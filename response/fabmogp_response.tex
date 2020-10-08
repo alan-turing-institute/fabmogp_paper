@@ -83,7 +83,26 @@ This is a nice and well-written paper about uncertainty quantification and calib
   a small fraction of the original input space. We have clarified this
   when describing the earthquake simulation.
 
-6. There is no discussion or consideration of the quality of the fit of the GP surrogate model. This issue should really be addressed in the paper. Can the authors show any validation results, e.g. using cross-validation? Does the mogp\_emulator library have capabilities for such a validation, and can it be made part of the computational workflow with the tools used in this paper?
+\item There is no discussion or consideration of the quality of the fit of the GP surrogate model. This issue should really be addressed in the paper. Can the authors show any validation results, e.g. using cross-validation? Does the \texttt{mogp\_emulator} library have capabilities for such a validation, and can it be made part of the computational workflow with the tools used in this paper?
+
+  \textbf{Response:} Model validation is straightforward using the existing
+  tools in the library. In practice, it is best to draw a separate LHC set
+  of design points to validate the emulator (rather than reserving part
+  of the training data as is commonly done in other situations) to ensure
+  that both the training and validation sets are drawn more uniformly from
+  the input space. Thus, creating a validation set is a matter of re-running
+  the entire workflow again with the desired number of validation points
+  and then comparing the emulator outputs with the predicted values.
+
+  We have amended the manuscript to include GP validation. We add a separate
+  section on this, a table to show the validation points, and a figure to
+  illustrate. In particular,
+  we find that there are a few validation failures of the GP surrogate.
+  This is due to a number of reasons, which we discuss in the manuscript.
+  We feel this is a good way to illustrate some of the challenges of
+  emulating complex computer codes, and we thank the reviewer for this
+  suggestion as we feel this has substantially improved the depth of
+  the discussion in the manuscript.
 
 7. Can the authors comment on how their approach and workflow will scale to larger problems? In the paper, three input parameters and a single simulator output variable are used, as well as 20 sample points for fitting the GP surrogate model. How easy will it be to tackle problems with more inputs, multiple outputs, or more sample points? What will be the main bottleneck for scaling up?
 

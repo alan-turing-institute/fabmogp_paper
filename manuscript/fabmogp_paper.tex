@@ -579,6 +579,116 @@ output noted in Table~\ref{table_lhc}, and the correlation lengths are of a simi
 input values, suggesting that our emulator does a reasonable job of capturing the information in
 the simulation outputs.
 
+\subsection{Validation}
+
+We validate the surrogate model by drawing a separate Latin Hypercube sample
+with 10 design points (Table~\ref{table_valid}).
+We note that while in many other statistical
+techniques it is common to withhold a subset of the training data for
+validation purposes, the space-filling nature of the Latin Hypercube suggest
+it is best to draw two separate samples to ensure that both the training
+and validation data aim to cover the input space as uniformly as possible.
+Once we have run the additional simulations, we validate the emulator by
+computing the predicted means and variances and comparing with the
+actual simulated values by computing the standard error (difference
+between the predited mean and the actual value normalised by the prediction
+standard deviation). For a valid emulator, we expect most of the standard
+error values to lie within $\pm 3$ standard devations from the mean.
+Other metrics can be used to validate emulators \cite{validation} that
+produce a single validationmetric for the entire validation set rather than an
+individual metric for each validation point.
+
+\begin{table}[!h]
+\caption{Latin Hypercube experimental design samples used for validating the surrogate model and the
+corresponding integrated slip}
+\label{table_valid}
+\begin{tabular}{ccccc}%%%The number of columns has to be defined here
+\hline
+Normal Stress & Shear/Normal Stress & Normal Stress Ratio & Simulator Output \\
+\hline
+\input{validation_points}
+\\\hline
+\end{tabular}
+\vspace*{-4pt}
+\end{table}%%%End of the table
+
+The values of the standard error for the 10 validation points are illustrated
+in Fig.~\ref{fig_valid}(a). We find that 8 of the 10 validation points lie
+within the 3 standard deviation window, while the remaining 2 points are
+outside of this range and indicate that the emulator is not perfectly
+reproducing the underlying function. There are several potential causes
+for these types of failures, which can be illustrated by looking at the
+spatial distribution of the training and validation points in
+Fig.~\ref{fig_valid}(b). Figure~\ref{fig_valid}(b) shows the input space
+projected into the normal stress-shear to normal stress plane, which
+are the two inputs to which the simulator output is most sensitive.
+The background color scale is the emulator predictions for a much larger set
+of 10,000 sample points. The simulation is most sensitive to the shear to
+normal stress ratio, with low values indicating rupture arrest and high
+values indicating rupture propagation. The white points are the 20 training
+points, the black points are the 8 validation points where the emulator
+predictions are valid, and the two red points are the validation failures.
+
+\begin{figure}[!h]
+\centering\includegraphics[width=4in]{figure2.pdf}
+\caption{(a) Emulator validation results for the 10 validation points
+  drawn using a Latin Hypercube experimental design. We find that the
+  emulator provides valid predictions for 8/10 validation points.
+  (b) Spatial distribution of the training and validation points, projected
+  into the normal stress and shear to normal stress ratio plane (the
+  simulator output is not highly sensitive to the additional normal
+  stress ratio).
+  The background color scale is the predicted emulator mean and shows the
+  approximate behaviour of the underlying simulator. The output is
+  most strongly dependent on the shear to normal stress ratio. White
+  points are the training samples, black points are validation points
+  where the emulator performance is valid, and red points are the two
+  points where a validation failure occurs. We note that the failure
+  points are near the transitions between regions where the dependence
+  of the output to the underlying input is strongly varying. This suggests
+  that the underlying function is non-stationary, and the resulting
+  emulator is overconfident in the predictions. However, we find that despite
+  these validation failures the emulator is still providing enough useful
+  information to proceed with the analysis due to its accuracy over
+  the majority of the input space.}
+\label{fig_nroy}
+\end{figure}
+
+For this problem, the emulator validation failures occur because
+in some portions of parameter space the simulator output
+is very sensitive to the inputs, while simultaneously there are other
+parts of the parameter space where the output is not very sensitive to
+the inputs. Our emulator uses a squared exponential covariance kernel, which
+is an example of a stationary covariance kernel in that it assumes a uniform
+correlation length should apply throughout the entire parameter space.
+For many nonlinear simulators, this assumption does not hold, and the resulting
+emulator will have some regions of the input space where it does not
+provide good predictions. In this case, the emulator is overconfident in
+the regions where the validation failures have occurred, but results in good
+performance for most of the input space.
+
+To correct this validation failure,
+we would first consider building an emulator with
+a more informative mean function, as in many cases a mean function that
+better captures prior information about the shape of the output
+will alleviate problems of a non-stationary
+underlying simulator. Prior distributions on the hyperparameters can also
+provide additional constraints if the experimental design does not sample
+the input space well enough to constrain the hyperparameter values. Drawing
+additional input samples can also help if there are a few problem areas
+where the emulator performs poorly and can be improved by constraining
+the value of the underlying simulator. We have experimented with training
+sets with 50 points and find that the emulator performs better in the
+sense that prediction uncertainties decreased. However, validating the
+emulator shows
+there are still regions where the predictions are overconfident due to
+non-stationarity of the underlying function, suggesting that an approach
+using a mean function is required to overcome this problem. However, we
+feel that a careful exploration of this issue is beyond the scope of this
+work, and thus we
+proceed with the original emulator as fit in the tutorial to perform
+History Matching.
+
 \subsection{History Matching}
 
 With the fit GP emulator, we can now make predictions using a dense sampling of points drawn from the
