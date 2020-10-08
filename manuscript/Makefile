@@ -63,6 +63,14 @@ $(FIG_24_VALID) $(VALID_OUT): % :
 $(FIG24) $(SIM_TEXT) : % : figure24.py ${FIG_24_FILES} ${FIG_24_VALID} ${MOGP_OUT} ${VALID_OUT}
 	python $<
 
+.PHONY: engage
+engage:
+	catalogue engage --code . --input_data input_data
+
+.PHONY: disengage
+disengage:
+	catalogue disengage --code . --input_data input_data --output_data results
+
 .PHONY: clean
 clean:
 	rm -f ${PAPER} ${FIGURES} ${SIMTEXT}
