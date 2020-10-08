@@ -748,6 +748,41 @@ robust model calibration approaches on problems that have not previously conside
 an approach. The library allows flexible specification of all components of the calibration
 workflow and is easily adaptable to other physical systems.
 
+There are numerous challenges in applying these methods to more complex
+research problems, some of which we have highlighted in this paper. In
+particular, the computational effort required to carry out the training
+and validation simulations will typically be much larger and require a high
+performance computing cluster. One advantage of our approach is that if
+the workflows have been appropriately defined using FabSim3 for simulation
+management, the same scripts can be used to run the ensemble on the
+cluster that were used here, only requiring a larger computational
+expense. The exact number of simulator samples that should be run will
+depend on the computational expense and resources available, but will
+also depend on the number of input parameters in the problem due to the
+well-known ``curse of dimensionality'' in that the size of the input
+space grows exponentially with the number of parameters. Thus, more
+realistic problems may require a larger number of simulator runs to
+obtain emulators with sufficiently good performance.
+
+Once the sample points are drawn from the simulator, more realistic problems
+will require more computational effort to fit the surrogate emulators to
+the data. This can be due to multiple outputs and observations, which
+require multiple emulators be fit to the simulator outputs and thus
+increase the computational cost. However, dimension reduction techniques
+\cite{dimreduction} for handling multiple outputs can reduce the cost
+of fitting the emulator by only fitting a few principal components to ensure
+that the emulators capture the correlation structure in the simulators.
+Additionally, more input parameters can increase the fitting costs due to
+the additional correlation lengths that must be estimated, as minimisation
+algorithms tend to be slower to converge for high-dimensional outputs.
+Once the emulators are fit, prediction costs will also scale with the
+number of emulators, and high dimensional input spaces will also require more
+query points to sample the input space at a high enough density to
+be able to rule out parts of the space.
+These factors will tend to increase the cost of fitting the surrogate models
+relative to this example, though in general for most applications the cost
+of running the simulator remains the largest computational expense.
+
 The UQ results demonstrate that given the seismic moment of an event, we can rule out
 much of the input stress parameter space, as the earthquake size is highly sensitive to
 the stress. This can potentially overcome one of the main challenges of using dynamic
