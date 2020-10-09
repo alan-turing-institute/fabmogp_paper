@@ -33,7 +33,7 @@ FIGURES = $(foreach N,$(shell seq 1 4),figure${N}.pdf)
 TUBE_FIG = FabMogpMap.pdf
 CATALOGUE_INPUTS = --code . --input_data input_data
 CATALOGUE_OUTPUTS = --output_data results
-CATALOGUE_JSON = catalogue_results/20201008-211554.json
+CATALOGUE_JSON = catalogue_results/20201009-151130.json
 
 $(PAPER) : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG} ${FIGURES} ${SIM_TEXT}
 	pdflatex $<
