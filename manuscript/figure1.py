@@ -13,7 +13,8 @@ ufault.load()
 
 fig = plt.figure(figsize=(6.5,3))
 fig.add_subplot(121)
-plt.pcolormesh(vybody.x, vybody.y, vybody.vy, vmin=-2., vmax=2., cmap="RdBu")
+plt.pcolormesh(vybody.x, vybody.y, vybody.vy, vmin=-2., vmax=2.,
+               shading="auto", cmap="RdBu")
 plt.plot(ufault.x, ufault.y, "k")
 plt.axis("image")
 plt.xlabel("Position along strike (km)")
