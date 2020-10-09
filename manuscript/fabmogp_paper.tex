@@ -336,7 +336,7 @@ simulation outputs.
 \subsection{Implementation with mogp\_emulator}
 
 The above components are implemented in the \texttt{mogp\_emulator} software library, which is
-written in Python and builds on the Numpy and Scipy libraries \cite{scipy} to handle the array operations and
+written in Python and builds on the Numpy and Scipy libraries \cite{2020NumPy-Array, 2020SciPy-NMeth} to handle the array operations and
 linear algebra, and probability distributions and optimisation libraries, respectively. The
 library is released under an MIT license and is under continued development. The
 package includes a number of features not used in this example, including flexible mean function
@@ -564,7 +564,7 @@ to the seismic moment. Values range from 35 m km to around 300 m km.
 \subsection{Surrogate Model}
 
 From these simulator runs, we fit a Gaussian Process emulator to the outputs using the default
-\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B \cite{lbfgs} to minimise the
+\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B \cite{lbfgs,2020SciPy-NMeth}to minimise the
 negative marginal log-likelihood, and use gradient information as the log-likelihood gradient
 can be computed in closed form and requires little computational overhead beyond performing the
 Cholesky decomposition that is cached from the log-likelihood computation \cite{gprw}.
@@ -844,10 +844,8 @@ associated tutorial and this manuscript.}
 
 \funding{EGD received support from EPSRC grant EP/N510129/1HA to the Alan Turing Institute. IM and DG have received funding from the European Union Horizon 2020 research and innovation programme under grant agreement No 800925 (VECMA) and 824115 (HiDALGO).}
 
-\ack{The simulations and plots in this paper build on several
-  open source packages in the SciPy ecosystem
-  \cite{2020NumPy-Array, 2020SciPy-NMeth, Hunter:2007}. We
-  thank Diana Suleimenova for commments on the tutorial text.}
+\ack{The figures in this paper were generated using Matplotlib \cite{Hunter:2007}.
+  We thank Diana Suleimenova for commments on the tutorial text.}
 
 %%%%%%%%%% Insert bibliography here %%%%%%%%%%%%%%
 
