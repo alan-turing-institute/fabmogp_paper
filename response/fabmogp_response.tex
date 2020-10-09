@@ -115,4 +115,16 @@ This is a nice and well-written paper about uncertainty quantification and calib
   
 \end{enumerate}
 
+\section{Other Changes}
+
+In addition to the changes outlined above, we have made some additional
+changes to enhance the reproducibility of our results. In particular,
+our provided codes now save all results from the numerical computations
+to file in the provided docker image, and using a software tool,
+compute cryptographic hash values of all output files. We have included
+the hash values that we obtained in our computations and scripts to
+automatically re-run our computations and compare the hash results
+obtained by another user with our values. We include instructions
+for reproducing our results in the Github repository for this work.
+
 \end{document}
