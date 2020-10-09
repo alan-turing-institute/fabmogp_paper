@@ -80,9 +80,11 @@ tool, which hashes all of the outputs from the simulations so that they can
 be compared later. To do this, from the
 same prompt in the container, type `make compare`. The hashing tool will
 print out the files that match and those that do not match -- note that
-there will be 65 instances where the files do not match (mainly because
-the FabSim3
+there will be some instances where the files do not match,
+which is mainly because the FabSim3
 tool saves log files and YAML files containing environment variables
 from the simulation runs, both of which include timestamps and thus will
-not match across repeated simulations). However, there should be 525
-files that match if the simulations were successfully reproduced.
+not match across repeated simulations. As long as none of the
+files ending in `.dat`, `.npy`, `.load`, or `.surf` show up in the section
+where the files did not agree, then the computational results are identical
+and have been successfully reproduced.

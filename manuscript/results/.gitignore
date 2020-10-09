@@ -3,3 +3,6 @@ NROY.npy
 implausibility.npy
 valid_error.npy
 query_points.npy
+input_points.npy
+query_mean.npy
+validation_points.npy
