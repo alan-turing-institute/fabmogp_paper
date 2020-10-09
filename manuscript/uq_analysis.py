@@ -33,9 +33,9 @@ with open("correlation_lengths.tex", "w") as outfile:
 with open("covariance_scale.tex", "w") as outfile:
     outfile.write("{:.3f}".format(np.sqrt(np.exp(gp.theta[3]))))
 
-np.save("results/hyperparameters.npy", gp.theta)
-
 validations = gp.predict(validation_points)
+
+valid_error = (validations.mean - validation_results)/np.sqrt(validations.unc)
 
 analysis_points = 10000
 threshold = 3.
@@ -43,8 +43,6 @@ known_value = 58.
 
 query_points = ed.sample(analysis_points)
 predictions = gp.predict(query_points)
-
-np.save("results/query_points.npy", query_points)
 
 # set up history matching
 
@@ -54,68 +52,13 @@ hm = HistoryMatching(obs=known_value, expectations=predictions,
 implaus = hm.get_implausibility()
 NROY = hm.get_NROY()
 
+# save results
+
+np.save("results/input_points.npy", input_points)
+np.save("results/validation_points.npy", validation_points)
+np.save("results/hyperparameters.npy", gp.theta)
+np.save("results/valid_error.npy", valid_error)
+np.save("results/query_points.npy", query_points)
+np.save("results/query_mean.npy", predictions.mean)
 np.save("results/implausibility.npy", implaus)
 np.save("results/NROY.npy", np.array(NROY, dtype=np.int64))
-
-# set up triangulation for plotting simulator output and implausibility
-
-import matplotlib.tri
-
-tri = matplotlib.tri.Triangulation(-(query_points[:,0]-80.)/40., (query_points[:,1]-0.1)/0.3)
-
-# make some plots
-
-valid_error = (validations.mean - validation_results)/np.sqrt(validations.unc)
-valid_include = (np.abs(valid_error) > 3.)
-
-np.save("results/valid_error.npy", valid_error)
-
-fig = plt.figure(figsize=(6.5,3))
-fig.add_subplot(121)
-plt.plot([x for x in range(len(validations.mean))], valid_error,
-         marker="o", color="C0", linewidth=0.)
-plt.plot([-1., 11.], [-3., -3.], color="C1", linestyle="--", alpha=0.5)
-plt.plot([-1., 11.], [3., 3.], color="C1", linestyle="--", alpha=0.5)
-plt.xlabel("Validation point number")
-plt.ylabel("Prediction standard error")
-
-fig.add_subplot(122)
-plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles,
-              predictions.mean, vmin = 0., vmax = 250., cmap="viridis")
-cb = plt.colorbar()
-cb.set_label("Predicted seismic moment (m km)")
-plt.plot(input_points[:,0], input_points[:,1],
-         marker="o", color="white", linewidth=0.)
-plt.plot(validation_points[~valid_include,0],
-         validation_points[~valid_include,1],
-         marker="o", color="black", linewidth=0.)
-plt.plot(validation_points[valid_include, 0],
-         validation_points[valid_include,1],
-         marker="o", color="C3", linewidth=0.)
-plt.xlabel('Normal Stress (MPa)')
-plt.ylabel('Shear to Normal Stress Ratio')
-plt.tight_layout()
-
-fig.text(0.005, 0.95, "(a)")
-fig.text(0.465, 0.95, "(b)")
-
-plt.savefig(os.path.join(os.getcwd(), "figure2.pdf"))
-
-plt.figure(figsize=(4,3))
-plt.plot(query_points[NROY, 0], query_points[NROY, 1], 'o')
-plt.xlabel('Normal Stress (MPa)')
-plt.ylabel('Shear to Normal Stress Ratio')
-plt.xlim((-120., -80.))
-plt.ylim((0.1, 0.4))
-plt.tight_layout()
-plt.savefig(os.path.join(os.getcwd(), "figure3.pdf"))
-
-plt.figure(figsize=(4,3))
-plt.tripcolor(query_points[:,0], query_points[:,1], tri.triangles, implaus,
-              vmin = 0., vmax = 6., cmap="viridis_r")
-cb = plt.colorbar()
-cb.set_label("Implausibility")
-plt.xlabel('Normal Stress (MPa)')
-plt.ylabel('Shear to Normal Stress Ratio')
-plt.tight_layout()
-plt.savefig(os.path.join(os.getcwd(), "figure4.pdf"))
