@@ -39,7 +39,7 @@ $(PAPER) : fabmogp_paper.tex fabmogp_paper.bib ${RS_IMAGES} ${RS_TEX} ${TUBE_FIG
 	rm -f $(subst .pdf,.aux,$@) $(subst .pdf,.log,$@) $(subst .pdf,.out,$@)
 	rm -f $(subst .pdf,.blg,$@) $(subst .pdf,.bbl,$@)
 
-$(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : figure1_sim.py
+$(FIG_1_FILES_U) $(FIG_1_FILES_VY) : % : run_earthquake.py
 	 python $<
 
 figure1.pdf: figure1.py ${FIG_1_FILES_U} ${FIG_1_FILES_VY}
@@ -63,7 +63,7 @@ $(FIG_24_VALID) $(VALID_OUT): % :
 	rm -rf ${RESULTS}
 	rm -rf ${SIMDIR}
 
-$(FIG24) $(SIM_TEXT) : % : figure24.py ${FIG_24_FILES} ${FIG_24_VALID} ${MOGP_OUT} ${VALID_OUT}
+$(FIG24) $(SIM_TEXT) : % : uq_analysis.py ${FIG_24_FILES} ${FIG_24_VALID} ${MOGP_OUT} ${VALID_OUT}
 	python $<
 
 .PHONY: engage
