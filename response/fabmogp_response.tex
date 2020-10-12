@@ -67,7 +67,8 @@ This is a nice and well-written paper about uncertainty quantification and calib
   multiple outputs. Our demo only used a single output for simplicity, but
   most computer simulations produce multiple
   outputs and are usually compared with multiple types of observations.
-  However, the overall workflow is unchanged so we felt multiple outputs was an
+  The overall workflow is unchanged when this situation is considered,
+  so we felt multiple outputs was an
   unneeded complication for the purposes of the tutorial.
   However, we agree that it is worth highlighting the changes required to
   perform UQ with simulations that produce many outputs. These changes are
@@ -91,15 +92,16 @@ This is a nice and well-written paper about uncertainty quantification and calib
   of the training data as is commonly done in other situations) to ensure
   that both the training and validation sets are drawn more uniformly from
   the input space. Thus, creating a validation set is a matter of re-running
-  the entire workflow again with the desired number of validation points
-  and then comparing the emulator outputs with the predicted values.
+  the simulation workflow again with the desired number of validation points
+  and then comparing the emulator outputs with the known values of the
+  simulator at the validation points.
 
   We have amended the manuscript to include GP validation. We add a separate
   section on this, a table to show the validation points, and a figure to
   illustrate. In particular,
   we find that there are a few validation failures of the GP surrogate.
-  This is due to a number of reasons, which we discuss in the manuscript.
-  We feel this is a good way to illustrate some of the challenges of
+  This is due to a number of reasons, and we elaborate on this in the manuscript.
+  We feel this illustrates some of the challenges of
   emulating complex computer codes, and we thank the reviewer for this
   suggestion as we feel this has substantially improved the depth of
   the discussion in the manuscript.
@@ -107,9 +109,9 @@ This is a nice and well-written paper about uncertainty quantification and calib
 \item Can the authors comment on how their approach and workflow will scale to larger problems? In the paper, three input parameters and a single simulator output variable are used, as well as 20 sample points for fitting the GP surrogate model. How easy will it be to tackle problems with more inputs, multiple outputs, or more sample points? What will be the main bottleneck for scaling up?
 
   \textbf{Response:} This is a good question. The challenges and
-  bottlenecks depend on the exact problem under consideration when considering
+  bottlenecks depend on the exact problem under consideration when addressing
   more realistic problems. We have added a paragraph to the conclusion
-  that addresses some of what we feel are the relevant issues, which
+  that highlights some of what we feel are the relevant issues, which
   we feel helps expand the reach of this paper given that it is meant
   to be an introductory tutorial/demonstration.
   
@@ -118,7 +120,7 @@ This is a nice and well-written paper about uncertainty quantification and calib
 \section{Other Changes}
 
 In addition to the changes outlined above, we have made some additional
-changes as follows:
+manuscript edits as follows:
 
 \begin{itemize}
 
