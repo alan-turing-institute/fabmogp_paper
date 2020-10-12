@@ -562,7 +562,7 @@ to the seismic moment. Values range from 35 m km to around 300 m km.
 \subsection{Surrogate Model}
 
 From these simulator runs, we fit a Gaussian Process emulator to the outputs using the default
-\texttt{mogp\_emulator} parameters. We use the SciPy implementation of L-BFGS-B \cite{lbfgs,2020SciPy-NMeth}to minimise the
+\texttt{mogp\_emulator} parameters. We use the SciPy implementation of L-BFGS-B \cite{lbfgs,2020SciPy-NMeth} to minimise the
 negative marginal log-likelihood, and use gradient information as the log-likelihood gradient
 can be computed in closed form and requires little computational overhead beyond performing the
 Cholesky decomposition that is cached from the log-likelihood computation \cite{gprw}.
