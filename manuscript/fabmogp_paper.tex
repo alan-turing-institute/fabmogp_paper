@@ -43,15 +43,15 @@ $^{2}$Department of Computer Science, Brunel University London, London, UK}
 
 We present a tutorial demonstration using a surrogate-model based Uncertainty Quantification (UQ)
 approach to study dynamic earthquake rupture on a rough fault surface. The UQ approach performs
-model calibration where we choose simulation points, fit an approximate surrogate
+model calibration where we choose simulation points, fit and validate an approximate surrogate
 model or emulator, and then examine the input space to see which inputs can be ruled out from the data.
 Our approach relies on the \texttt{mogp\_emulator} package to perform model calibration,
 and the FabSim3 component from
 the VECMA toolkit to streamline the workflow, enabling users to manage the workflow using the
 command line to curate reproducible simulations on local and remote resources.
-The tools in this tutorial provides an example template that allows domain researchers that are
+The tools in this tutorial provide an example template that allows domain researchers that are
 not necessarily experts in the underlying
-methods to apply them easily to complex problems.
+methods to apply them to complex problems.
 
 We illustrate the use of the package by applying the methods to dynamic earthquake rupture, which solves
 the elastic wave equation for the size of an earthquake and the resulting ground shaking based on the
@@ -110,7 +110,7 @@ For instance, another approach to UQ would be to conduct a sensitivity analysis 
 simulation outputs \cite{sobol}, which aims at determining how the output variability is related to the
 various simulation inputs. This information is complementary to the calibration results,
 and could provide additional information on how to further explore the parameter space
-with additional simulations runs.
+with additional simulation runs.
 
 However, while surrogate modelling approaches are common among statistics researchers, they are
 less frequently used by the domain experts that develop and run the physical models. Because of this,
@@ -154,7 +154,7 @@ workflow, in order to make this more accessible to a wider audience.
 We have also noted several places where we have made some simplifications
 and a more careful consideration would be
 warranted when applying this workflow in a research setting.
-We feel this work highlights ways that existing
+We feel this work illustrates ways that existing
 software libraries can help address these problems, while simultaneously
 highlighting some of the challenges by applying it to a real problem
 in earthquake science.
@@ -202,7 +202,7 @@ building a surrogate model of the underlying simulator.
 \subsection{Gaussian Process Emulator}
 
 To fit our surrogate model, we use a Gaussian Process emulator to approximate the simulation.
-Gaussian Processes are a non-parametric model for regression that approximates the complex simulator
+A Gaussian Process is a non-parametric model for regression that approximates the complex simulator
 function as a multivariate normal distribution. Because the simulator is deterministic,
 a GP interpolates between the known simulation points in a robust way and provides uncertainty
 estimates for any predictions that it makes. Because it has an uncertainty estimate, it is commonly
@@ -254,7 +254,7 @@ unstable. To mitigate this, a ``nugget'' term is added to the diagonal that adds
 of noise to stabilise the matrix inversion \cite{nugget}. There are several ways to estimate the nugget: it can
 be fixed (known noise level), it can be fit as an additional hyperparameter, or it can be found
 adaptively by factorising the matrix with increasing noise levels until the algorithm succeeds.
-In this example, we use the adaptive approach as we find it tends to be the most robust way to fit an
+In this example, we use the adaptive approach as we find it tends to be a very robust way to fit an
 emulator with a small nugget.
 
 In this example, we focus on a computer simulation with a single output for
@@ -272,8 +272,8 @@ reduction on the outputs and emulate the reduced set of outputs
 \cite{dimreduction} which simultaneously reduces the computational cost
 of fitting and ensures that samples drawn from the emulators more closely
 resemble the simulation output. However, the overall procedure for fitting
-the emulators remains identical regardless of the total number of outputs
-or the method of emulating these outputs.
+an individual emulator remains identical regardless of the total number
+of outputs.
 
 \subsection{History Matching}
 
@@ -283,7 +283,7 @@ metric $I$ for each query point by determining the number of standard deviations
 predicted mean from the approximate model:
 \begin{align}\label{implaus}
 \begin{split}
-I(\bar{x^*}) = \frac{|z - m(x^*))|}{\sqrt{\sigma_z^2+V(x^*)+\sigma_d^2}}
+I(x^*) = \frac{|z - m(x^*))|}{\sqrt{\sigma_z^2+V(x^*)+\sigma_d^2}}
 \end{split}
 \end{align}
 where $z$ is the observed quantity and $\sigma_z$ is its observational error (as a standard deviation) and
@@ -316,7 +316,7 @@ emulator uncertainty from dominating the calibration
 results. This condition is frequently not met given the high dimensional
 parameter space and computational costs of running many simulations in
 most practical applications.
-History matching can still produce useful output with a perfect
+History matching can still produce useful output with an imperfect
 emulator, as it simply will be unable to rule out points in regions of
 space where the emulator uncertainty is too large, while still giving
 useful information in othe parts of parameter space. Thus, because of
@@ -365,7 +365,7 @@ frictional failure properties, both of which are taken to be known here for the 
 Physically, slip occurs when the shear stress on the fault exceeds the fault strength. Fault strength is
 determined by a friction law that compares the shear force on a patch of the fault to the normal force acting
 on that patch of the fault \cite{slipweak}. When this condition is met, the fault slips on this local patch, which changes
-the forces acting on the other fault patches (this process is described by the elastic wave equation).
+the forces acting on the other fault patches based on the elastic wave equation.
 Thus, to make a physical model of an earthquake, we need to specify the initial forces on the fault, the
 strength of the fault, and the elastic medium surrounding the fault. In general, the initial forces on the
 fault cannot be determined in the earth \cite{earthquakemech},
@@ -384,8 +384,8 @@ advance, and it is just the initial stress (forces) that must be inferred.
 
 \begin{figure}[!h]
 \centering\includegraphics[width=5in]{figure1.pdf}
-\caption{(a) Snapshot of an earthquake simulation. The bumpy dark line is the fault surface. The color scale represents the ground motions from the resulting earthquake as the elastic waves carry the stress changes from the slip propagate through the medium. (b) Final slip at the end of a simulation. We compute the
-seismic moment from the simulation by integrating the final slip as a function of space.}
+\caption{(a) Snapshot of an earthquake simulation. The bumpy dark line is the fault surface. The color scale represents the ground motions from the resulting earthquake as the elastic waves carry the stress changes from the slip propagation through the medium. (b) Final slip at the end of a simulation. We compute the
+seismic moment by integrating the final slip as a function of space.}
 \label{fig_sim}
 \end{figure}
 
@@ -416,7 +416,7 @@ on the fault slip $U$ as
 \mu(U) = \begin{cases}(1 - U/D_c)(\mu_s-\mu_d) + \mu_d & (U < D_c) \\ \mu_d & (U \geq D_c) \end{cases}
 \end{split}
 \end{align}
-Here, $\mu_s$ is a static friction coefficient, $\mu_d$ is the dynamic friction coefficient, and $D_c$
+Here, $\mu_s$ is the static friction coefficient, $\mu_d$ is the dynamic friction coefficient, and $D_c$
 is the slip scale over which friction transitions from static to dynamic. The simulation is initiated
 at a fixed point at the centre of the fault by increasing the shear stress to the failure level over
 a patch of width 4 km. Strong barriers arrest rupture 2 km from the ends of the simulation, which
@@ -446,11 +446,11 @@ Fourier space with random phase and taking the real part of the FFT and removing
 The RMS deviation from planarity is fixed to be smaller than the fault length by a factor of $10^{-2}$,
 which is typical
 for natural faults \cite{dunhametal}. Roughness is cut off at wavelengths shorter than 20 times the
-grid spacing. We have run the analysis on several realisation of the rough
+grid spacing. We have run the analysis on several realisations of the rough
 fault profile and find that the general conclusions are not sensitive
 to the exact choice of fault geometry. Changing the profile does influence
 the exact values of the simulator output, but the results of the UQ analysis
-are largely the same in that History Matching procedure is able to rule out
+are largely the same in that the History Matching procedure is able to rule out
 much of the parameter space.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
@@ -489,13 +489,13 @@ for FabSim3 which we call \texttt{fabmogp} to automate the various steps in the 
 where the different software components reside on local and remote resources is shown in
 Fig.~\ref{tubemap}, which also shows where additional components not used here would reside.
 In this illustration, the local resources are shown to the left, while the remote HPC
-resources are in the large light gray box, and the connections used in our workflow are shown in orange.
+resources are shown to the right, and the connections used in our workflow are shown in orange.
 Our workflow involves the user (lower left corner) running \texttt{mogp\_emulator} on
 the local machine and using FabSim3 (via the \texttt{fabmogp} plugin) to run the ensemble
 on the remote resource. However, in practice our simulations are small enough that this can also
 be run on the local machine. FabSim3 then collects the results back onto the local machine,
 where the UQ analysis is performed. Other workflows supported by the VECMA toolkit are shown
-in the light gray boxes on the local machine.
+in the other gray boxes throughout the diagram.
 
 \begin{figure}[!h]
 \centering\includegraphics[width=5in]{vecmatk-tubemap-mogp.pdf}
@@ -530,9 +530,7 @@ This illustrates the utility of using a simulation management tool like FabSim3.
 
 Once the ensemble has run, FabSim3 can automatically fetch the simulation results for analysis. The
 analysis to fit the GP emulator and perform History Matching is implemented in a FabSim3 task to
-collect the simulation results and perform the UQ workflow. More details are available in the
-tutorial text, which is part of the
-\texttt{fabmogp} code base.
+collect the simulation results and perform the UQ workflow.
 
 \section{Results}
 
@@ -564,7 +562,7 @@ to the seismic moment. Values range from 35 m km to around 300 m km.
 \subsection{Surrogate Model}
 
 From these simulator runs, we fit a Gaussian Process emulator to the outputs using the default
-\texttt{mogp\_emulator} parameters. We use the Scipy implementation of L-BFGS-B \cite{lbfgs,2020SciPy-NMeth}to minimise the
+\texttt{mogp\_emulator} parameters. We use the SciPy implementation of L-BFGS-B \cite{lbfgs,2020SciPy-NMeth}to minimise the
 negative marginal log-likelihood, and use gradient information as the log-likelihood gradient
 can be computed in closed form and requires little computational overhead beyond performing the
 Cholesky decomposition that is cached from the log-likelihood computation \cite{gprw}.
@@ -585,7 +583,7 @@ We validate the surrogate model by drawing a separate Latin Hypercube sample
 with 10 design points (Table~\ref{table_valid}).
 We note that while in many other statistical
 techniques it is common to withhold a subset of the training data for
-validation purposes, the space-filling nature of the Latin Hypercube suggest
+validation purposes, the space-filling nature of the Latin Hypercube suggests
 it is best to draw two separate samples to ensure that both the training
 and validation data aim to cover the input space as uniformly as possible.
 Once we have run the additional simulations, we validate the emulator by
@@ -622,7 +620,8 @@ spatial distribution of the training and validation points in
 Fig.~\ref{fig_valid}(b). Figure~\ref{fig_valid}(b) shows the input space
 projected into the normal stress-shear to normal stress plane, which
 are the two inputs to which the simulator output is most sensitive.
-The background color scale is the emulator predictions for a much larger set
+The background colour scale shows the emulator predictions for a much
+larger set
 of 10,000 sample points. The simulation is most sensitive to the shear to
 normal stress ratio, with low values indicating rupture arrest and high
 values indicating rupture propagation. The white points are the 20 training
@@ -638,7 +637,8 @@ predictions are valid, and the two red points are the validation failures.
   into the normal stress and shear to normal stress ratio plane (the
   simulator output is not highly sensitive to the additional normal
   stress ratio).
-  The background color scale is the predicted emulator mean and shows the
+  The background colour scale shows the predicted emulator mean and
+  illustrates the
   approximate behaviour of the underlying simulator. The output is
   most strongly dependent on the shear to normal stress ratio. White
   points are the training samples, black points are validation points
@@ -651,7 +651,7 @@ predictions are valid, and the two red points are the validation failures.
   these validation failures the emulator is still providing enough useful
   information to proceed with the analysis due to its accuracy over
   the majority of the input space.}
-\label{fig_nroy}
+\label{fig_valid}
 \end{figure}
 
 For this problem, the emulator validation failures occur because
@@ -674,12 +674,14 @@ better captures prior information about the shape of the output
 will alleviate problems of a non-stationary
 underlying simulator. Prior distributions on the hyperparameters can also
 provide additional constraints if the experimental design does not sample
-the input space well enough to constrain the hyperparameter values. Drawing
+the input space well enough to robustly estimate
+the hyperparameter values. Drawing
 additional input samples can also help if there are a few problem areas
 where the emulator performs poorly and can be improved by constraining
 the value of the underlying simulator. We have experimented with training
 sets with 50 points and find that the emulator performs better in the
-sense that prediction uncertainties decreased. However, validating the
+sense that we observe a decrease in the prediction uncertainties.
+However, validating the
 emulator shows
 there are still regions where the predictions are overconfident due to
 non-stationarity of the underlying function, suggesting that an approach
@@ -693,7 +695,7 @@ History Matching.
 
 With the fit GP emulator, we can now make predictions using a dense sampling of points drawn from the
 experimental design and compare with an observed value using History Matching. We use 10,000 samples
-in the analysis that follows. For the sake of this demostration, we simply choose an arbitrary value
+in the analysis that follows. For the sake of this demonstration, we simply choose an arbitrary value
 from within the range of simulation outputs to serve as our ``observed'' value to illustrate how the
 procedure works, though in practice the observed seismic moment would be the size of a particular
 earthquake on the fault that is being studied. We assume that there is no error in the true value
@@ -704,13 +706,13 @@ expand the size of the space that has not been ruled out.
 An example of the samples that have been not ruled out yet (NROY) for the observed value of 58 m km
 is shown in Fig.~\ref{fig_nroy} projected into the normal and shear/normal ratio plane of parameter
 space. We use a plausibility threshold of 3 standard deviations from the mean to rule out points.
-We note that the NROY space is fairly clustered around along a specific curve in this space.
+We note that the NROY space is fairly clustered along a specific curve in this space.
 At high compressive normal stresses, this seismic moment is produced for shear/normal stress ratios
 of around 0.16, while at lower normal stresses the shear/normal stress must be slightly higher
 near 0.2 to
 produce the known value. At very low shear to normal stresses there is a region that cannot be
 ruled out, though the fact that this occurs near the boundary of the space suggests this may be
-an artifact of our original sampling. Designs with more sample points do not exhibit this feature.
+an artifact of our original sampling. Designs with 50 sample points do not exhibit this feature.
 We note that the projection shown in Fig.~\ref{fig_nroy} was found to capture most of the structure
 in the space, and suggests that the additional normal
 stress component is less important for predicting the final seismic moment in our simulations.
@@ -730,7 +732,7 @@ values to improve our understanding of the problem and make predictions.
 
 \begin{figure}[!h]
 \centering\includegraphics[width=4in]{figure4.pdf}
-\caption{Implausibility metric (number of standard deviations between the observation and the predictions of the surrogate model, Eq.~(\ref{implaus})) in the parameter space projected into the normal and shear/normal plane. As with the NROY plot, this shows the sensitivity of the output to the stress components.}
+\caption{Implausibility metric (number of standard deviations between the observation and the predictions of the surrogate model, Eq.~(\ref{implaus})) in the parameter space projected into the normal and shear/normal plane. As with the NROY plot, this illustrates the high sensitivity of the output to the stress components.}
 \label{fig_implausibility}
 \end{figure}
 
@@ -743,7 +745,7 @@ instructions, and the FabSim3 plugin facilitates scaling our simulations to more
 problems requiring execution on a computer cluster. Our implementation also makes the UQ
 and earthquake simulation methods accessible to new users and facilitates reproducibility
 by providing the computational environment required to run them.
-Our results also illustrate how the \texttt{mogp\_emulator} package allows implementation on
+Our results also illustrate how the \texttt{mogp\_emulator} package allows implementation of
 robust model calibration approaches on problems that have not previously considered such
 an approach. The library allows flexible specification of all components of the calibration
 workflow and is easily adaptable to other physical systems.
@@ -774,7 +776,8 @@ of fitting the emulator by only fitting a few principal components to ensure
 that the emulators capture the correlation structure in the simulators.
 Additionally, more input parameters can increase the fitting costs due to
 the additional correlation lengths that must be estimated, as minimisation
-algorithms tend to be slower to converge for high-dimensional outputs.
+algorithms tend to be slower to converge for high-dimensional search
+spaces.
 Once the emulators are fit, prediction costs will also scale with the
 number of emulators, and high dimensional input spaces will also require more
 query points to sample the input space at a high enough density to
