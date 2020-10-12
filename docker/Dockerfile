@@ -65,15 +65,13 @@ localhost:\n\
   fdfault_exec : "'${base_dir}'/'${fdfault_dir}'"\n\
 \n' >> ${FabSim3_dir}/deploy/machines_user.yml
 
-
 # allow everyone to read and execute the file
 RUN mkdir /var/run/sshd && sudo chmod -R 755 /var/run/sshd
 RUN mkdir ~/.ssh && sudo chmod -R 755 ~/.ssh
 RUN echo 'root:root' | chpasswd
 RUN sed -i 's/#PermitRootLogin .*$/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-
-#RUN fab localhost setup_fabsim
+# Setup SSH for fabsim
 RUN rm -f ~/.ssh/id_rsa
 RUN ssh-keygen -t rsa -N "" -f ~/.ssh/id_rsa
 RUN cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
@@ -81,12 +79,8 @@ RUN chmod og-wx ~/.ssh/authorized_keys
 RUN ssh-keyscan -H localhost >> ~/.ssh/known_hosts
 RUN echo "StrictHostKeyChecking accept-new" > ~/.ssh/config
 
-
 WORKDIR ${base_dir}/${FabSim3_dir}
 RUN fab localhost install_plugin:fabmogp
-
-WORKDIR ${base_dir}/${FabSim3_dir}/plugins/fabmogp
-RUN git checkout --force paper_edits
 
 # customize bashrc
 RUN sed -i -e 's/#force_color_prompt=yes$/force_color_prompt=yes/'  /root/.bashrc
