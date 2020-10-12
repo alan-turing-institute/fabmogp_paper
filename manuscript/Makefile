@@ -30,7 +30,7 @@ FIG_ALL_FILES = results/query_points.npy
 SIM_TEXT = lhc_values.tex validation_points.tex\
            correlation_lengths.tex covariance_scale.tex
 FIGURES = $(foreach N,$(shell seq 1 4),figure${N}.pdf)
-TUBE_FIG = FabMogpMap.pdf
+TUBE_FIG = vecmatk-tubemap-mogp.pdf
 CATALOGUE_INPUTS = --code . --input_data input_data
 CATALOGUE_OUTPUTS = --output_data results
 CATALOGUE_JSON = catalogue_results/20201009-151130.json

@@ -498,9 +498,9 @@ where the UQ analysis is performed. Other workflows supported by the VECMA toolk
 in the light gray boxes on the local machine.
 
 \begin{figure}[!h]
-\centering\includegraphics[width=5in]{FabMogpMap.pdf}
+\centering\includegraphics[width=5in]{vecmatk-tubemap-mogp.pdf}
 \caption{Illustration of the workflow used in our simulations. Local resources are shown on the
-left, and remote HPC resources on the right in the light gray box. The HPC user (dark gray box in
+left in light gray, and remote HPC resources on the right in darker gray. The HPC user (orange circle in
 the lower left corner) uses a local machine running \texttt{mogp\_emulator} to set up the
 UQ workflow. This connects with FabSim3 on the local machine, which is running the
 \texttt{fabmogp} plugin. The plugin
@@ -508,7 +508,7 @@ connects via SSH to the cluster, where it runs the \texttt{fdfault} simulations 
 in practice, these are actually run locally in our tutorial). FabSim3 collects the results
 back on the local machine, where \texttt{mogp\_emulator} performs the surrogate modelling
 and history matching.
-Other workflows enabled by the VECMA toolkit are shown in light gray on the local machine.}
+Other workflows enabled by the VECMA toolkit are shown in gray boxes on the local and HPC machines.}
 \label{tubemap}
 \end{figure}
 
