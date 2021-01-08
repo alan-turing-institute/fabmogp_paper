@@ -10,9 +10,9 @@ ARG paper_repo=https://github.com/alan-turing-institute/fabmogp_paper.git
 ARG FabSim3_dir=FabSim3
 ARG FabSim3_repo=https://github.com/djgroen/FabSim3.git
 ARG fdfault_dir=fdfault
-ARG fdfault_repo=https://github.com/egdaub/fdfault.git
-ARG mogp_emulator_dir=mogp_emulator
-ARG mogp_emulator_repo=https://github.com/alan-turing-institute/mogp_emulator.git
+ARG fdfault_repo=https://github.com/edaub/fdfault.git
+ARG mogp_emulator_dir=mogp-emulator
+ARG mogp_emulator_repo=https://github.com/alan-turing-institute/mogp-emulator.git
 ARG output_dir=results
 
 # install dependencies needs to for FabSim3

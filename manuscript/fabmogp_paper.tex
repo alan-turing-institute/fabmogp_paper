@@ -161,6 +161,8 @@ in earthquake science.
 
 \section{Uncertainty Quantification Approach}
 
+\label{uqsection}
+
 In Uncertainty Quantification (UQ) workflows, we would like to learn about a complex simulator that describes
 a physical system, in nearly every case imperfectly \cite{experimentaldesign,calibration}.
 These simulations are usually computationally intensive,
@@ -228,7 +230,7 @@ $x^*$ given a set of $n$ inputs $x$ and simulator outputs $y$ are computed via
 \begin{align}\label{predict}
 \begin{split}
 m(x^*) &= K(x^*, x) K(x, x)^{-1} y \\
-V[x^*] &= K(x^*, x^*) - K(x^*, x) K(x, x)^{-1} K(x, x^*)
+V(x^*) &= K(x^*, x^*) - K(x^*, x) K(x, x)^{-1} K(x, x^*)
 \end{split}
 \end{align}
 where $K(x,x)$ is the $n \times n$ matrix of the covariance kernel evaluated at all pairs of points.
@@ -391,7 +393,7 @@ seismic moment by integrating the final slip as a function of space.}
 
 \subsection{Simulation Details}
 
-The simulation requires us to specify the initial stress tensor acting on the earthquake fault in order to run a
+The simulation requires that we specify the initial stress tensor acting on the earthquake fault in order to run a
 simulation. For this case, we run a 2D plane strain simulation of a fault that is 32 km in length
 to reduce the problem to a reasonable
 computational level such that it only takes a short amount of time to run. In a plane strain model, the
@@ -462,7 +464,7 @@ While we do not know the exact values of the stresses on earthquake faults, we d
 \end{enumerate}
 
 Thus, we parametrize the simulations with three inputs: a normal stress that is uniformly distributed from -120 MPa to -80 MPa, a shear to normal ratio uniformly distributed from 0.1 to 0.4, and a ratio between the two normal stress components uniformly distribted from 0.9 to 1.1. These three parameters can be sampled via
-any Experimental Design approach described in Section~\ref{experimentaldesign}.
+any Experimental Design approach described in Section~\ref{uqsection}\ref{experimentaldesign}.
 
 To run the earthquake simulations, we use the \texttt{fdfault} application. \texttt{fdfault} is a
 high performance, parallelised
@@ -482,8 +484,8 @@ of the tutorial time slot to make the problem practical.
 
 \section{Simulation Management}
 
-The UQ workflow and earthquake simulations described above can be run via \texttt{mogp\_emulator} and
-manually running the parallel earthquake simulations. However, in practice this is challenging
+The UQ workflow described above can be run via \texttt{mogp\_emulator}, while the parallel earthquake simulations would need to be run manually.
+However, in practice this is challenging
 and makes simulations difficult to reproduce. Thus, in our implementation, we have written a plugin
 for FabSim3 which we call \texttt{fabmogp} to automate the various steps in the workflow. A map illustrating
 where the different software components reside on local and remote resources is shown in
@@ -593,7 +595,7 @@ between the predited mean and the actual value normalised by the prediction
 standard deviation). For a valid emulator, we expect most of the standard
 error values to lie within $\pm 3$ standard devations from the mean.
 Other metrics can be used to validate emulators \cite{validation} that
-produce a single validationmetric for the entire validation set rather than an
+produce a single validation metric for the entire validation set rather than an
 individual metric for each validation point.
 
 \begin{table}[!h]
@@ -802,9 +804,7 @@ These physical simulations can thus capture the natural variability of events in
 something that current empirical approaches cannot do in a physical way.
 This will enable
 physics-based seismic hazard analysis that exploits simulations in a way not previously
-possible, and give more robust estimates of future earthquake sizes and ground motions
-in a way that better constrains uncertainties in both the physical models and the
-predicted hazard.
+possible, and give more robust estimates of future earthquake sizes and ground motions in order to better constrain uncertainties in both the physical models and the predicted hazard.
 
 \vskip6pt
 
@@ -814,9 +814,9 @@ predicted hazard.
 All simulation codes used in this work are publically available on Github under free and open
 source software licenses:
 \begin{itemize}
-   \item \texttt{mogp\_emulator} https://github.com/alan-turing-institute/mogp\_emulator
+   \item \texttt{mogp\_emulator} https://github.com/alan-turing-institute/mogp-emulator
    \item \texttt{FabSim3} https://github.com/djgroen/fabsim3
-   \item \texttt{fdfault} https://github.com/egdaub/fdfault
+   \item \texttt{fdfault} https://github.com/edaub/fdfault
 \end{itemize}
 The FabSim3 plugin that implements all of the simulations and analysis described in this work
 is also available under a free and open source licese on Github:
