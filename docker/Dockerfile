@@ -33,7 +33,7 @@ RUN cd /usr/local/bin && \
     ln -s /usr/bin/python3 python && \
     pip3 install --upgrade pip && \
     pip install -U pip setuptools && \
-    pip install -r ${paper_dir}/requirements.txt
+    pip install -r ${base_dir}/${paper_dir}/requirements.txt
 
 # clone fdfault github repository
 WORKDIR ${base_dir}
