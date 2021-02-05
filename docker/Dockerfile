@@ -11,8 +11,6 @@ ARG FabSim3_dir=FabSim3
 ARG FabSim3_repo=https://github.com/djgroen/FabSim3.git
 ARG fdfault_dir=fdfault
 ARG fdfault_repo=https://github.com/edaub/fdfault.git
-ARG mogp_emulator_dir=mogp-emulator
-ARG mogp_emulator_repo=https://github.com/alan-turing-institute/mogp-emulator.git
 ARG output_dir=results
 
 # install dependencies needs to for FabSim3
@@ -26,26 +24,22 @@ RUN apt-get update && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/{apt,dpkg,cache,log}
 
+# clone paper repo
+WORKDIR ${base_dir}
+RUN mkdir -p ${paper_dir} && \
+    git clone ${paper_repo} ${paper_dir}
 
 RUN cd /usr/local/bin && \
     ln -s /usr/bin/python3 python && \
     pip3 install --upgrade pip && \
     pip install -U pip setuptools && \
-    pip install pyyaml matplotlib numpy scipy pytest fabric3 cryptography && \
-    pip install repro-catalogue
-
-# clone mogp_emulator github repository
-WORKDIR ${base_dir}
-RUN mkdir -p ${mogp_emulator_dir} && \
-    git clone ${mogp_emulator_repo} ${mogp_emulator_dir} && \
-    cd ${mogp_emulator_dir} && \
-    python setup.py install
+    pip install -r ${paper_dir}/requirements.txt
 
 # clone fdfault github repository
 WORKDIR ${base_dir}
 RUN pwd && ls
 RUN mkdir -p ${fdfault_dir} && \
-    git clone ${fdfault_repo} ${fdfault_dir} && \
+    git clone -b v1.0.1 --single-branch ${fdfault_repo} ${fdfault_dir} && \
     cd ${fdfault_dir}/src && \
     make && \
     cd ../python && \
@@ -54,7 +48,7 @@ RUN mkdir -p ${fdfault_dir} && \
 # clone FabSim3 github repository
 WORKDIR ${base_dir}
 RUN mkdir -p ${FabSim3_dir} && \
-    git clone ${FabSim3_repo} ${FabSim3_dir}
+    git clone -b v2.6 --single-branch ${FabSim3_repo} ${FabSim3_dir}
 
 # generate machines_user.yml file
 RUN cp ${FabSim3_dir}/deploy/machines_user_example.yml ${FabSim3_dir}/deploy/machines_user.yml
@@ -79,8 +73,12 @@ RUN chmod og-wx ~/.ssh/authorized_keys
 RUN ssh-keyscan -H localhost >> ~/.ssh/known_hosts
 RUN echo "StrictHostKeyChecking accept-new" > ~/.ssh/config
 
+# install fabmogp plugin and checkout correct version
 WORKDIR ${base_dir}/${FabSim3_dir}
 RUN fab localhost install_plugin:fabmogp
+
+WORKDIR ${base_dir}/${FabSim3_dir}/plugins/fabmogp
+RUN git checkout v1.0 -b branch-v1.0
 
 # customize bashrc
 RUN sed -i -e 's/#force_color_prompt=yes$/force_color_prompt=yes/'  /root/.bashrc
@@ -89,11 +87,6 @@ RUN echo 'export PATH='${base_dir}'/'${FabSim3_dir}'/bin:$PATH' >> /root/.bashrc
 RUN echo 'export PYTHONPATH='${base_dir}'/'${FabSim3_dir}':$PYTHONPATH' >> /root/.bashrc
 RUN echo 'export PYTHONPATH='${base_dir}'/'${FabSim3_dir}'/plugins/fabmogp:$PYTHONPATH' >> /root/.bashrc
 RUN echo 'export OUTPUT='${base_dir}'/'${output_dir} >> /root/.bashrc
-
-# clone paper repo
-WORKDIR ${base_dir}
-RUN mkdir -p ${paper_dir} && \
-    git clone ${paper_repo} ${paper_dir}
 
 # set up outputs
 WORKDIR ${base_dir}
