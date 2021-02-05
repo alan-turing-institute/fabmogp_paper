@@ -172,7 +172,7 @@ to compare with observations.
 To overcome these challenges, we use a surrogate model approach based on a Gaussian Process emulator \cite{gprw}.
 We run a limited sample of points based on an Experimental Design over the input space, and fit the GP
 to the simulation outputs. The GP is then queried for a large number of input points from the Experimental
-Design and an approach known as History Matching is used to compare with the observations
+Design and an approach known as history matching is used to compare with the observations
 to calibrate the model. The result from this is a set of input points that are plausible given the
 observations and all uncertainties. In the following, we describe the steps in this workflow in more detail.
 
@@ -280,7 +280,7 @@ of outputs.
 \subsection{History Matching}
 
 Once we have predictions for a large number of query points, it is straightforward to compare with observations.
-History Matching is one way to perform this comparison \cite{histmatch} -- in History Matching, we compute an implausibility
+History matching is one way to perform this comparison \cite{histmatch} -- in history matching, we compute an implausibility
 metric $I$ for each query point by determining the number of standard deviations between the observation and the
 predicted mean from the approximate model:
 \begin{align}\label{implaus}
@@ -301,16 +301,16 @@ As noted above, there are three types of uncertainty that we need to account for
 
 In practice, (i) and (ii) are straightforward to determine, while (iii) is much trickier \cite{modeldiscrep}. However, studies have shown that not accounting for model discrepancy leads to overconfident predictions, so this is essential to consider to give a thorough UQ treatment to a computational model. However, estimating model uncertainty is in itself a difficult (and often subjective) task, and is beyond the scope of this tutorial, as it requires knowledge about the approximations made in the simulation. Thus, we will restrict ourselves to only accounting for uncertainty in the approximate model in this tutorial, but note that realistic UQ assessments require careful scrutiny and awareness of the limitations of computational models.
 
-An alternative approach to History Matching for model calibration is to
+An alternative approach to history matching for model calibration is to
 perform a full Bayesian model calibration \cite{calibration},
 which aims to compute the posterior
 distribution of the simulator inputs conditioned on the observational data
 and the points at which the simulator was evaluated.
-As with History Matching, this approach uses a fast surrogate model to
+As with history matching, this approach uses a fast surrogate model to
 approximate the simulator and accounts for all errors including observational
 error and model discrepancy. It has the advantage of generating a probability
 distribution (or samples drawn from one in most practical cases) for the
-parameter values, while History Matching is only able to determine if
+parameter values, while history matching is only able to determine if
 points can be ruled out or not.
 However, full Bayesian calibration requires that
 the emulator has a low uncertainty over the entire input space to prevent
@@ -322,17 +322,17 @@ History matching can still produce useful output with an imperfect
 emulator, as it simply will be unable to rule out points in regions of
 space where the emulator uncertainty is too large, while still giving
 useful information in othe parts of parameter space. Thus, because of
-its robustness to emulator uncertainties, we focus on History Matching
+its robustness to emulator uncertainties, we focus on history matching
 in this example.
 
-In situations where the simulation has multiple outputs, History Matching
+In situations where the simulation has multiple outputs, history matching
 requires a method for combining the implausibility measure for multiple
 outputs into a single implausibility metric for the given simulator input.
 This is usually done by taking the second or third highest individual
 implausibility metric value to avoid a situation where poor performance of
 the emulator for a particular output causes a point that is otherwise a
 good fit to the data from being ruled out \cite{vernon2014}. Otherwise,
-the History Matching procedure is the same regardless of the number of
+the history matching procedure is the same regardless of the number of
 simulation outputs.
 
 \subsection{Implementation with mogp\_emulator}
@@ -452,7 +452,7 @@ grid spacing. We have run the analysis on several realisations of the rough
 fault profile and find that the general conclusions are not sensitive
 to the exact choice of fault geometry. Changing the profile does influence
 the exact values of the simulator output, but the results of the UQ analysis
-are largely the same in that the History Matching procedure is able to rule out
+are largely the same in that the history matching procedure is able to rule out
 much of the parameter space.
 
 $\sigma_{yy}$ describes the normal force on the fault, and $\sigma_{xx}$ describes the normal force in the orthogonal direction. The shear component $\sigma_{xy}$ sets the shear force acting on the fault. Note, however, that all three components matter because the fault is not a perfect plane, and we must project the tensor into the local shear and normal components for a given patch on the fault to determine the actual forces on the fault.
@@ -531,7 +531,7 @@ up to larger problems in 3D on a cluster without needing to change any of our ex
 This illustrates the utility of using a simulation management tool like FabSim3.
 
 Once the ensemble has run, FabSim3 can automatically fetch the simulation results for analysis. The
-analysis to fit the GP emulator and perform History Matching is implemented in a FabSim3 task to
+analysis to fit the GP emulator and perform history matching is implemented in a FabSim3 task to
 collect the simulation results and perform the UQ workflow.
 
 \section{Results}
@@ -691,12 +691,12 @@ using a mean function is required to overcome this problem. However, we
 feel that a careful exploration of this issue is beyond the scope of this
 work, and thus we
 proceed with the original emulator as fit in the tutorial to perform
-History Matching.
+history matching.
 
 \subsection{History Matching}
 
 With the fit GP emulator, we can now make predictions using a dense sampling of points drawn from the
-experimental design and compare with an observed value using History Matching. We use 10,000 samples
+experimental design and compare with an observed value using history matching. We use 10,000 samples
 in the analysis that follows. For the sake of this demonstration, we simply choose an arbitrary value
 from within the range of simulation outputs to serve as our ``observed'' value to illustrate how the
 procedure works, though in practice the observed seismic moment would be the size of a particular
